@@ -80,6 +80,16 @@ export const initDb = async () => {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
+        CREATE TABLE IF NOT EXISTS job_applications (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            job_id INTEGER REFERENCES jobs(id) ON DELETE CASCADE,
+            cover_letter TEXT,
+            status TEXT DEFAULT 'applied', -- 'applied', 'reviewed', 'accepted', etc.
+            applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+            UNIQUE(user_id, job_id) -- prevent duplicate applications
+        );
     `;
 
         await client.query(createTables);
