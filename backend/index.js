@@ -1,0 +1,33 @@
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import authRoutes from './app/routes/auth.routes.js';
+import userRoutes from './app/routes/user.routes.js';
+import jobRoutes from './app/routes/jobs.routes.js';
+import feedRoutes from './app/routes/feed.routes.js';
+
+
+const app = express();
+const PORT = 8000;
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));  
+app.use(cookieParser());
+app.use(cors({
+    origin: '*',  
+    credentials: true,
+}));
+
+// app.use('/api/v1/healthcheck', healthcheckRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/jobs', jobRoutes);
+app.use('/api/v1/feed', feedRoutes);
+// app.use('/api/web3', web3Routes);
+// app.use('/api/nlp', nlpRoutes); 
+
+app.listen(PORT, ()=>{
+    console.log(`Server is running on PORT ${PORT}`);
+})
+
+
