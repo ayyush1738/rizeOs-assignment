@@ -23,7 +23,6 @@ export const initDb = async () => {
             full_name TEXT,
             wallet_address TEXT UNIQUE NOT NULL,
             location TEXT,
-            address TEXT,
             bio TEXT,
             skills TEXT[], -- PostgreSQL supports string arrays
             profile_picture TEXT,

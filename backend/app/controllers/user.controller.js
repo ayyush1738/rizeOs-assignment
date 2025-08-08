@@ -16,7 +16,7 @@ export const getMyProfile = async (req, res) => {
 
     const { rows } = await query(
       `SELECT id, email, username, full_name, bio, profile_picture, skills,
-              location, address, linkedin, twitter, github, resume_url
+              location, address, resume_url
        FROM users WHERE email = $1`,
       [decoded.email]
     );
@@ -43,41 +43,33 @@ export const updateMyProfile = async (req, res) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     const {
       full_name,
+      wallet_address,
       bio,
       profile_picture,
       skills,
       location,
       address,
-      linkedin,
-      twitter,
-      github,
       resume_url
     } = req.body;
 
     await query(
       `UPDATE users
        SET full_name = $1,
-           bio = $2,
-           profile_picture = $3,
-           skills = $4,
-           location = $5,
-           address = $6,
-           linkedin = $7,
-           twitter = $8,
-           github = $9,
-           resume_url = $10,
+           wallet_address = $2,
+           bio = $3,
+           profile_picture = $4,
+           skills = $5,
+           location = $6,
+           resume_url = $7,
            updated_at = CURRENT_TIMESTAMP
-       WHERE email = $11`,
+       WHERE email = $8`,
       [
         full_name,
+        wallet_address,
         bio,
         profile_picture,
         skills, // Expecting skills to be an array if using PostgreSQL TEXT[]
         location,
-        address,
-        linkedin,
-        twitter,
-        github,
         resume_url,
         decoded.email
       ]

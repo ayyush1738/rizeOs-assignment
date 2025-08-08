@@ -21,11 +21,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
     username: user?.username || '',
     email: user?.email || '',
     bio: user?.bio || '',
-    location: user?.location || '',
-    address: user?.address || '',
-    linkedin: user?.linkedin || '',
-    twitter: user?.twitter || '',
-    github: user?.github || '',
+    location: user?.location || ''
   });
   const [skills, setSkills] = useState<string[]>(user?.skills || []);
   const [newSkill, setNewSkill] = useState('');
@@ -49,11 +45,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
         username: user.username || '',
         email: user.email || '',
         bio: user.bio || '',
-        location: user.location || '',
-        address: user.address || '',
-        linkedin: user.linkedin || '',
-        twitter: user.twitter || '',
-        github: user.github || '',
+        location: user.location || ''
       });
       setSkills(user.skills || []);
       setAvatarPreview(user.avatar || '');
@@ -103,11 +95,11 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
     // This object's keys MUST match what your Express `updateMyProfile` expects
     const payload = {
       full_name: formData.username,
+      wallet_address: address,
       bio: formData.bio,
       profile_picture: newAvatarUrl,
       skills: skills,
       location: formData.location,
-      address: formData.address,
     };
 
     try {
@@ -148,7 +140,6 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
       setIsLoading(false);
     }
   };
-
 
   if (!isOpen) return null;
 
