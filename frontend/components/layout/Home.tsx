@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Search, Sparkles, X } from "lucide-react";
 import axios from "axios";
-import TrendingPosts from "./Feed";
+import TrendingPosts from "../Feed/Feed";
 
 const roles = [
   "Frontend Developer",
