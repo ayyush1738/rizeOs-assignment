@@ -11,11 +11,11 @@ import {
     MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
 import { useState } from "react";
-import AuthForm from "@/components/ui/AuthForm";
+import AuthForm from "@/components/ui/AuthForm"; // 👈 Import the new component
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
 import type { UserProfile } from "@/types/UserProfile";
-// FIX 1: Import the ProfileSettingsModal component
 import ProfileSettingsModal from "@/components/ui/ProfileSettingsModal";
+
 
 export default function NavbarDemo() {
     const navItems = [
@@ -23,6 +23,7 @@ export default function NavbarDemo() {
         { name: "Dashboard", link: "#dashboard" },
         { name: "Contact", link: "#contact" },
     ];
+
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -32,46 +33,61 @@ export default function NavbarDemo() {
     const [username, setUsername] = useState('');
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState<UserProfile | null>(null);
-    const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false); // Corrected state name for clarity
+    const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+    const [token, setToken] = useState<string | null>(null);
 
-    // Mock successful login and set user data
     const handleLoginSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        alert('Login successful!');
-        setIsAuthenticated(true);
-        setUser({
-            name: 'Jane Doe',
-            email: email,
-            avatar: `https://i.pravatar.cc/150?u=${email}`,
-            bio: 'This is a sample bio. Edit your profile to change it!',
-            location: 'San Francisco, CA',
-            skills: ['React', 'TypeScript']
-        });
-        setShowModal(false);
-        setEmail('');
-        setPassword('');
+        try {
+            const res = await fetch('http://localhost:8000/api/v1/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                setIsAuthenticated(true);
+                setShowModal(false);
+                setToken(data.token);
+                setUser(data.user); // ✅ SET the user here
+            }
+            else {
+                alert(data.message || 'Login failed');
+            }
+        } catch (err) {
+            console.error('Login error:', err);
+            alert('Something went wrong during login');
+        }
     };
 
-    // Mock successful registration and set user data
     const handleRegisterSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        alert('Registration successful!');
-        setIsAuthenticated(true);
-        setUser({
-            name: username,
-            email: email,
-            avatar: `https://i.pravatar.cc/150?u=${email}`,
-            bio: 'Just joined! Ready to code.',
-            location: '',
-            skills: []
-        });
-        setShowModal(false);
-        setUsername('');
-        setEmail('');
-        setPassword('');
+        try {
+            const res = await fetch('http://localhost:8000/api/v1/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, email, password }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                setIsAuthenticated(true);
+                setShowModal(false);
+            }
+            else {
+                alert(data.message || 'Registration failed');
+            }
+        } catch (err) {
+            console.error('Registration error:', err);
+            alert('Something went wrong during registration');
+        }
     };
 
-    // Handle user logout
     const handleLogout = () => {
         setIsAuthenticated(false);
         setUser(null);
@@ -88,6 +104,7 @@ export default function NavbarDemo() {
         setUser(updatedUser);
         alert("Profile updated successfully!");
     };
+
 
 
     return (
@@ -171,8 +188,8 @@ export default function NavbarDemo() {
             )}
 
             {/* FIX 3: Conditionally render the ProfileSettingsModal */}
-           {isSettingsModalOpen && user && token && (
-                 <ProfileSettingsModal
+            {isSettingsModalOpen && user && token && (
+                <ProfileSettingsModal
                     isOpen={isSettingsModalOpen}
                     onClose={() => setIsSettingsModalOpen(false)}
                     user={user}

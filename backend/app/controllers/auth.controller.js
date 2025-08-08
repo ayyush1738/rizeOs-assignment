@@ -53,10 +53,7 @@ export const login = async (req, res) => {
   }
 
   try {
-    const { rows } = await query(
-      'SELECT * FROM users WHERE email = $1',
-      [email]
-    );
+    const { rows } = await query('SELECT * FROM users WHERE email = $1', [email]);
 
     const user = rows[0];
 
@@ -64,7 +61,7 @@ export const login = async (req, res) => {
       return res.status(403).json({ message: 'Invalid email or password' });
     }
 
-    const token = jwt.sign({ email: user.email }, JWT_SECRET, {
+    const token = jwt.sign({ email: user.email, id: user.id }, JWT_SECRET, {
       expiresIn: '6h',
     });
 
@@ -76,10 +73,16 @@ export const login = async (req, res) => {
       maxAge: 6 * 60 * 60 * 1000,
     });
 
-    res.json({ message: 'Login successful', token });
+    // Remove sensitive info
+    const { password: _, ...safeUser } = user;
+
+    res.json({
+      message: 'Login successful',
+      token,
+      user: safeUser, // return complete user info except password
+    });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Login failed' });
   }
 };
-

@@ -29,9 +29,12 @@ export default function ProfileAvatar({ user, onLogout, onEditProfile }: Profile
     <div className="relative" ref={menuRef}>
       <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-0 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
         <Avatar className="w-10 h-10">
-          <AvatarImage src={user.avatar} alt={user.name} />
-          <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
-        </Avatar>
+  <AvatarImage src={user.avatar || "/default-avatar.png"} alt={user.username || "User"} />
+  <AvatarFallback>
+    {user.username?.charAt(0).toUpperCase() || "U"}
+  </AvatarFallback>
+</Avatar>
+
       </button>
 
       {isMenuOpen && (
