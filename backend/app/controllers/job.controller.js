@@ -1,9 +1,6 @@
 import { query } from '../config/dbConnect.js';
 import jwt from 'jsonwebtoken';
-import fs from 'fs';
-import path from 'path';
 import axios from 'axios';
-import pdfParse from 'pdf-parse';
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Extract email from JWT
@@ -78,21 +75,14 @@ export const getJobById = async (req, res) => {
 
 export const matchJobsFromResume = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'Resume file is required.' });
+    const { resume_text } = req.body;
+
+    if (!resume_text || resume_text.trim() === '') {
+      return res.status(400).json({ message: 'Resume text is required.' });
     }
 
-    const filePath = path.join(process.cwd(), req.file.path);
-    const pdfData = await pdfParse(fs.readFileSync(filePath));
-    const resumeText = pdfData.text;
-
-    // Optional: delete the file after parsing
-    fs.unlinkSync(filePath);
-
-    // Call the FastAPI matching service
-    const { data } = await axios.post(MATCHING_API_URL, {
-      resume_text: resumeText
-    });
+    // Forward the resume text to the FastAPI NLP service
+    const { data } = await axios.post(MATCHING_API_URL, { resume_text });
 
     return res.json(data);
   } catch (error) {
