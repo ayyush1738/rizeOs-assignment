@@ -52,6 +52,9 @@ export default function NavbarDemo() {
                 setShowModal(false);
                 setToken(data.token);
                 setUser(data.user); // ✅ SET the user here
+
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
             }
             else {
                 alert(data.message || 'Login failed');
@@ -88,10 +91,20 @@ export default function NavbarDemo() {
     };
 
     const handleLogout = () => {
+        // Clear component state
         setIsAuthenticated(false);
         setUser(null);
+        setToken(null);
+
+        // Clear persistent local storage
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
         alert('You have been logged out.');
+        // Optionally, you could force a page reload or redirect to ensure a clean state
+        // window.location.href = '/'; 
     };
+
 
     // FIX 2: Create a handler to save the updated profile data from the modal
     const handleProfileSave = (updatedUser: UserProfile, newAvatarFile?: File) => {

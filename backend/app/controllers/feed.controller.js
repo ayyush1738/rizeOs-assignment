@@ -23,8 +23,7 @@ export const getPosts = async (req, res) => {
   const { rows } = await query(`
     SELECT p.id, p.content, p.created_at, u.full_name, u.username, u.profile_picture,
       (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) AS likes,
-      (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) AS comments,
-      (SELECT COUNT(*) FROM post_shares WHERE post_id = p.id) AS shares
+      (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) AS comments
     FROM posts p
     JOIN users u ON u.id = p.user_id
     ORDER BY p.created_at DESC
