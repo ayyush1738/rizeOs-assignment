@@ -1,5 +1,14 @@
 export interface UserProfile {
-  name: string;
+  id?: number;
+  name: string;      // Corresponds to full_name
   email: string;
-  avatar: string; // URL to the avatar image
+  avatar?: string;    // Corresponds to profile_picture
+  bio?: string;
+  location?: string;
+  skills?: string[];
+  address?: string;
+  linkedin?: string;
+  twitter?: string;
+  github?: string;
+  resume_url?: string;
 }

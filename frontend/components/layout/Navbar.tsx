@@ -12,8 +12,10 @@ import {
 } from "@/components/ui/resizable-navbar";
 import { useState } from "react";
 import AuthForm from "@/components/ui/AuthForm";
-import ProfileAvatar from "@/components/ui/ProfileAvatar"; // Import the new component
-import type { UserProfile } from "@/types/UserProfile";   // Import the new type
+import ProfileAvatar from "@/components/ui/ProfileAvatar";
+import type { UserProfile } from "@/types/UserProfile";
+// FIX 1: Import the ProfileSettingsModal component
+import ProfileSettingsModal from "@/components/ui/ProfileSettingsModal";
 
 export default function NavbarDemo() {
     const navItems = [
@@ -29,14 +31,8 @@ export default function NavbarDemo() {
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [user, setUser] = useState<UserProfile | null>(null); // Add state for user data
-
-    const handleAvatarUpdate = (newImageUrl: string) => {
-        if (user) {
-            setUser({ ...user, avatar: newImageUrl });
-            alert("Avatar updated successfully!");
-        }
-    };
+    const [user, setUser] = useState<UserProfile | null>(null);
+    const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false); // Corrected state name for clarity
 
     // Mock successful login and set user data
     const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -44,9 +40,12 @@ export default function NavbarDemo() {
         alert('Login successful!');
         setIsAuthenticated(true);
         setUser({
-            name: 'Jane Doe', // In a real app, use data from your API response
+            name: 'Jane Doe',
             email: email,
-            avatar: `https://i.pravatar.cc/150?u=${email}`
+            avatar: `https://i.pravatar.cc/150?u=${email}`,
+            bio: 'This is a sample bio. Edit your profile to change it!',
+            location: 'San Francisco, CA',
+            skills: ['React', 'TypeScript']
         });
         setShowModal(false);
         setEmail('');
@@ -61,7 +60,10 @@ export default function NavbarDemo() {
         setUser({
             name: username,
             email: email,
-            avatar: `https://i.pravatar.cc/150?u=${email}`
+            avatar: `https://i.pravatar.cc/150?u=${email}`,
+            bio: 'Just joined! Ready to code.',
+            location: '',
+            skills: []
         });
         setShowModal(false);
         setUsername('');
@@ -76,6 +78,18 @@ export default function NavbarDemo() {
         alert('You have been logged out.');
     };
 
+    // FIX 2: Create a handler to save the updated profile data from the modal
+    const handleProfileSave = (updatedUser: UserProfile, newAvatarFile?: File) => {
+        // In a real-world application, you would handle the file upload to your backend here.
+        // For this example, we'll just log the file and update the user state.
+        if (newAvatarFile) {
+            console.log("New avatar to upload:", newAvatarFile);
+        }
+        setUser(updatedUser);
+        alert("Profile updated successfully!");
+    };
+
+
     return (
         <div className="relative w-full">
             <Navbar>
@@ -85,7 +99,6 @@ export default function NavbarDemo() {
                     </div>
                     <NavItems items={navItems} />
 
-                    {/* Logic to show Sign In button or Profile Avatar */}
                     <div className="flex items-center gap-4 z-50">
                         {!isAuthenticated ? (
                             <button
@@ -94,18 +107,16 @@ export default function NavbarDemo() {
                             >
                                 Sign in
                             </button>
-                        ) :  user ? (
-                            // 👇 Pass the new prop and handler function here
-                            <ProfileAvatar 
-                                user={user} 
-                                onLogout={handleLogout} 
-                                onAvatarChange={handleAvatarUpdate} 
+                        ) : user ? (
+                            <ProfileAvatar
+                                user={user}
+                                onLogout={handleLogout}
+                                onEditProfile={() => setIsSettingsModalOpen(true)}
                             />
                         ) : null}
                     </div>
                 </NavBody>
 
-                {/* Mobile Navigation with updated auth buttons */}
                 <MobileNav>
                     <MobileNavHeader>
                         <NavbarLogo />
@@ -118,9 +129,8 @@ export default function NavbarDemo() {
                         isOpen={isMobileMenuOpen}
                         onClose={() => setIsMobileMenuOpen(false)}
                     >
-                        {/* ... nav items */}
                         <div className="flex w-full flex-col gap-4 pt-4">
-                           {!isAuthenticated ? (
+                            {!isAuthenticated ? (
                                 <NavbarButton
                                     onClick={() => {
                                         setIsMobileMenuOpen(false);
@@ -132,7 +142,7 @@ export default function NavbarDemo() {
                                     Login
                                 </NavbarButton>
                             ) : (
-                                 <NavbarButton
+                                <NavbarButton
                                     onClick={handleLogout}
                                     className="w-full"
                                 >
@@ -157,6 +167,17 @@ export default function NavbarDemo() {
                     username={username}
                     setUsername={setUsername}
                     setShowModal={setShowModal}
+                />
+            )}
+
+            {/* FIX 3: Conditionally render the ProfileSettingsModal */}
+           {isSettingsModalOpen && user && token && (
+                 <ProfileSettingsModal
+                    isOpen={isSettingsModalOpen}
+                    onClose={() => setIsSettingsModalOpen(false)}
+                    user={user}
+                    onSave={handleProfileSave}
+                    token={token} // <-- PASS THE TOKEN PROP
                 />
             )}
         </div>
