@@ -1,30 +1,24 @@
+// components/NavbarDemo.tsx
 "use client";
-import {
-    Navbar,
-    NavBody,
-    NavItems,
-    MobileNav,
-    NavbarLogo,
-    NavbarButton,
-    MobileNavHeader,
-    MobileNavToggle,
-    MobileNavMenu,
-} from "@/components/ui/resizable-navbar";
-import { useState } from "react";
-import AuthForm from "@/components/ui/AuthForm"; // 👈 Import the new component
+import React, { useState } from 'react';
+import { cn } from "@/lib/utils";
+import AuthForm from "@/components/ui/AuthForm";
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
 import type { UserProfile } from "@/types/UserProfile";
 import ProfileSettingsModal from "@/components/ui/ProfileSettingsModal";
 
+interface NavbarDemoProps {
+    activeTab: string;
+    onTabChange: (tab: string) => void;
+}
 
-export default function NavbarDemo() {
+export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) {
     const navItems = [
-        { name: "Network", link: "#features" },
-        { name: "Jobs", link: "#dashboard" }
+        { name: "Feed", link: "feed" },
+        { name: "Network", link: "network" },
+        { name: "Jobs", link: "jobs" },
     ];
 
-
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [isLoginTab, setIsLoginTab] = useState(true);
     const [email, setEmail] = useState('');
@@ -117,71 +111,64 @@ export default function NavbarDemo() {
         alert("Profile updated successfully!");
     };
 
-
-
     return (
-        <div className="relative w-full">
-            <Navbar>
-                <NavBody>
-                    <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                        Vaultify
-                    </div>
-                    <NavItems items={navItems} />
-
-                    <div className="flex items-center gap-4 z-50">
-                        {!isAuthenticated ? (
-                            <button
-                                className="h-10 w-44 bg-blue-900 hover:bg-blue-400 text-white cursor-pointer rounded-md"
-                                onClick={() => setShowModal(true)}
-                            >
-                                Sign in
-                            </button>
-                        ) : user ? (
-                            <ProfileAvatar
-                                user={user}
-                                onLogout={handleLogout}
-                                onEditProfile={() => setIsSettingsModalOpen(true)}
-                            />
-                        ) : null}
-                    </div>
-                </NavBody>
-
-                <MobileNav>
-                    <MobileNavHeader>
-                        <NavbarLogo />
-                        <MobileNavToggle
-                            isOpen={isMobileMenuOpen}
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        />
-                    </MobileNavHeader>
-                    <MobileNavMenu
-                        isOpen={isMobileMenuOpen}
-                        onClose={() => setIsMobileMenuOpen(false)}
-                    >
-                        <div className="flex w-full flex-col gap-4 pt-4">
-                            {!isAuthenticated ? (
-                                <NavbarButton
-                                    onClick={() => {
-                                        setIsMobileMenuOpen(false);
-                                        setShowModal(true);
-                                    }}
-                                    variant="primary"
-                                    className="w-full"
-                                >
-                                    Login
-                                </NavbarButton>
-                            ) : (
-                                <NavbarButton
-                                    onClick={handleLogout}
-                                    className="w-full"
-                                >
-                                    Sign Out
-                                </NavbarButton>
-                            )}
+        <>
+            <header className="w-full bg-white border-b border-gray-200 dark:border-gray-800 shadow-sm sticky top-0 z-40">
+                <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center h-16">
+                        <div className="flex-1">
+                            <div className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+                                Vaultify
+                            </div>
                         </div>
-                    </MobileNavMenu>
-                </MobileNav>
-            </Navbar>
+
+                        <div className="flex-1 flex justify-center">
+                            <div className="hidden md:flex items-center space-x-2">
+                                {navItems.map((item) => {
+                                    const isActive = activeTab === item.link;
+                                    return (
+                                        <a
+                                            key={item.link}
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                onTabChange(item.link);
+                                            }}
+                                            className={cn(
+                                                "px-4 py-2 rounded-4xl text-sm font-semibold transition-colors duration-200",
+                                                isActive
+                                                    ? "bg-black text-white"
+                                                    : "text-gray-600 hover:bg-gray-200 hover:text-black dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+                                            )}
+                                        >
+                                            {item.name}
+                                        </a>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="flex-1 flex justify-end">
+                            <div className="flex items-center z-50">
+                                {!isAuthenticated ? (
+                                    <button
+                                        className="h-10 px-6 bg-blue-900 hover:bg-blue-800 text-white cursor-pointer rounded-md font-semibold text-sm transition-colors"
+                                        onClick={() => setShowModal(true)}
+                                    >
+                                        Sign In
+                                    </button>
+                                ) : user ? (
+                                    <ProfileAvatar
+                                        user={user}
+                                        onLogout={handleLogout}
+                                        onEditProfile={() => setIsSettingsModalOpen(true)}
+                                    />
+                                ) : null}
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </header>
 
             {showModal && (
                 <AuthForm
@@ -199,16 +186,15 @@ export default function NavbarDemo() {
                 />
             )}
 
-            {/* FIX 3: Conditionally render the ProfileSettingsModal */}
             {isSettingsModalOpen && user && token && (
                 <ProfileSettingsModal
                     isOpen={isSettingsModalOpen}
                     onClose={() => setIsSettingsModalOpen(false)}
                     user={user}
                     onSave={handleProfileSave}
-                    token={token} // <-- PASS THE TOKEN PROP
+                    token={token}
                 />
             )}
-        </div>
+        </>
     );
 }

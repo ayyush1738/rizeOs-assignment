@@ -49,7 +49,7 @@ export default function CreatePost({ onPostCreated }: { onPostCreated?: () => vo
   };
 
   return (
-    <div className="bg-white p-4 rounded-xl shadow mb-4">
+    <div className="bg-white w-full p-4 rounded-xl shadow mb-4">
       <Textarea
         placeholder="Write your post..."
         value={content}
@@ -57,7 +57,7 @@ export default function CreatePost({ onPostCreated }: { onPostCreated?: () => vo
         className="w-full min-h-[100px]"
       />
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-      <Button className="mt-2" onClick={handleSubmit} disabled={submitting}>
+      <Button className="mt-2 cursor-pointer" onClick={handleSubmit} disabled={submitting}>
         {submitting ? 'Posting...' : 'Post'}
       </Button>
     </div>
