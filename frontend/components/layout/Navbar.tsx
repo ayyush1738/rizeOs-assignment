@@ -19,9 +19,9 @@ import ProfileSettingsModal from "@/components/ui/ProfileSettingsModal";
 
 export default function NavbarDemo() {
     const navItems = [
-        { name: "Features", link: "#features" },
-        { name: "Dashboard", link: "#dashboard" },
-        { name: "Contact", link: "#contact" },
+        { name: "Network", link: "#features" },
+        { name: "Jobs", link: "#dashboard" },
+        { name: "Feed", link: "#contact" },
     ];
 
 

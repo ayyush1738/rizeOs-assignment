@@ -1,6 +1,7 @@
 export interface UserProfile {
   id?: number;
-  name: string;      // Corresponds to full_name
+  username: string;   
+  full_name: string;   // Corresponds to full_name
   email: string;
   avatar?: string;    // Corresponds to profile_picture
   bio?: string;

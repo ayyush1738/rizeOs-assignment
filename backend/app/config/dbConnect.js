@@ -27,9 +27,6 @@ export const initDb = async () => {
             bio TEXT,
             skills TEXT[], -- PostgreSQL supports string arrays
             profile_picture TEXT,
-            linkedin TEXT,
-            twitter TEXT,
-            github TEXT,
             resume_url TEXT,
 
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

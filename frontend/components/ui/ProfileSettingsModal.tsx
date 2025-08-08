@@ -5,41 +5,21 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, X, User, Briefcase, MapPin, Loader2 } from 'lucide-react'; // Added Loader2 for loading icon
 import type { UserProfile } from '@/types/UserProfile';
 
-// Define the props for our modal, adding a 'token' for API calls
 interface ProfileSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: UserProfile;
   onSave: (updatedUser: UserProfile, newAvatarFile?: File) => void;
-  token: string; // The JWT needed for authenticated requests
+  token: string; 
 }
-
-// Ensure your UserProfile type includes all fields from the backend
-// In your types/UserProfile.ts file:
-// export interface UserProfile {
-//   id?: number;
-//   name: string;      // Corresponds to full_name
-//   email: string;
-//   avatar?: string;    // Corresponds to profile_picture
-//   bio?: string;
-//   location?: string;
-//   skills?: string[];
-//   address?: string;
-//   linkedin?: string;
-//   twitter?: string;
-//   github?: string;
-//   resume_url?: string;
-// }
 
 
 export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, token }: ProfileSettingsModalProps) {
-  // --- STATE MANAGEMENT ---
   const [formData, setFormData] = useState({
-    name: user?.name || '',
+    username: user?.username || '',
     email: user?.email || '',
     bio: user?.bio || '',
     location: user?.location || '',
-    // Add other fields your form will manage
     address: user?.address || '',
     linkedin: user?.linkedin || '',
     twitter: user?.twitter || '',
@@ -62,7 +42,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
   useEffect(() => {
     if (user) {
         setFormData({
-            name: user.name || '',
+            username: user.username || '',
             email: user.email || '',
             bio: user.bio || '',
             location: user.location || '',
@@ -118,16 +98,12 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
     // --- Prepare the payload for the backend ---
     // This object's keys MUST match what your Express `updateMyProfile` expects
     const payload = {
-        full_name: formData.name,
+        full_name: formData.username,
         bio: formData.bio,
         profile_picture: newAvatarUrl,
         skills: skills,
         location: formData.location,
         address: formData.address,
-        linkedin: formData.linkedin,
-        twitter: formData.twitter,
-        github: formData.github,
-        // The email is not updated here as it's the identifier
     };
 
     try {
@@ -172,17 +148,15 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
 
   if (!isOpen) return null;
 
-  // --- STYLED COMPONENTS (as variables for readability) ---
   const cardStyles = "bg-white border border-gray-200 rounded-xl shadow-sm";
   const cardHeaderStyles = "p-5 border-b border-gray-200";
   const cardTitleStyles = "text-lg font-semibold text-gray-900 flex items-center gap-2";
   const cardContentStyles = "p-5";
   const labelStyles = "block text-sm font-medium text-gray-700 mb-1";
-  const inputStyles = "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
-  const buttonStyles = "inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed";
+  const inputStyles = "w-full text-black px-3 py-2 border border-black rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
+  const buttonStyles = "inline-flex  items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed";
 
   return (
-    // Main modal overlay
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
       <div className="relative bg-gray-50 rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] overflow-hidden flex flex-col">
         {/* Modal Header */}
@@ -206,15 +180,15 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
                 <div className={`${cardContentStyles} text-center`}>
                   <div className="relative w-28 h-28 mx-auto group">
                     <Avatar className="w-28 h-28 text-3xl">
-                      <AvatarImage src={avatarPreview} alt={formData.name} />
-                      <AvatarFallback>{formData.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage src={avatarPreview} alt={formData.username} />
+                      <AvatarFallback>{formData.username.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <button onClick={() => fileInputRef.current?.click()} className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
                       <Upload className="w-6 h-6" />
                     </button>
                     <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
                   </div>
-                  <h3 className="font-semibold text-xl text-gray-900 mt-4">{formData.name}</h3>
+                  <h3 className="font-semibold text-xl text-gray-900 mt-4">{user.username}</h3>
                   <p className="text-gray-600 text-sm">{formData.email}</p>
                   {formData.location && <p className="text-gray-500 text-sm mt-1 flex items-center justify-center gap-1"><MapPin size={14}/> {formData.location}</p>}
                   <hr className="my-4" />
@@ -235,7 +209,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="name" className={labelStyles}>Full Name</label>
-                      <input id="name" type="text" className={inputStyles} value={formData.name} onChange={(e) => handleInputChange('name', e.target.value)} />
+                      <input id="name" type="text" className={inputStyles} value={formData.username} onChange={(e) => handleInputChange('username', e.target.value)} />
                     </div>
                     <div>
                       <label htmlFor="email" className={labelStyles}>Email Address (cannot be changed)</label>
@@ -268,7 +242,18 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
                     <input value={newSkill} onChange={(e) => setNewSkill(e.target.value)} placeholder="Add a new skill..." onKeyDown={(e) => { if (e.key === 'Enter') handleAddSkill(newSkill); }} className={inputStyles} />
                     <button onClick={() => handleAddSkill(newSkill)} disabled={!newSkill} className={buttonStyles}>Add</button>
                   </div>
-                  <div className="flex flex-wrap gap-2">{suggestedSkills.filter(s => !skills.includes(s)).map((skill) => (<button key={skill} onClick={() => handleAddSkill(skill)} className="px-2 py-1 text-xs border border-gray-300 rounded-md hover:bg-gray-100">+ {skill}</button>))}</div>
+                  <div className="flex flex-wrap gap-2 text-black">{suggestedSkills.filter(s => !skills.includes(s)).map((skill) => (<button key={skill} onClick={() => handleAddSkill(skill)} className="px-2 py-1 text-xs border border-gray-300 rounded-md hover:bg-gray-100">+ {skill}</button>))}</div>
+                </div>
+              </div>
+
+              <div className={cardStyles}>
+                <div className={cardHeaderStyles}><h3 className={cardTitleStyles}>Connect Your Wallet</h3></div>
+                <div className={`${cardContentStyles} space-y-4`}>
+                  <div className="flex gap-2">
+                    <input value={newSkill} onChange={(e) => setNewSkill(e.target.value)} placeholder="Add a new skill..." onKeyDown={(e) => { if (e.key === 'Enter') handleAddSkill(newSkill); }} className={inputStyles} />
+                    <button onClick={() => handleAddSkill(newSkill)} disabled={!newSkill} className={buttonStyles}>Add</button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-black">{suggestedSkills.filter(s => !skills.includes(s)).map((skill) => (<button key={skill} onClick={() => handleAddSkill(skill)} className="px-2 py-1 text-xs border border-gray-300 rounded-md hover:bg-gray-100">+ {skill}</button>))}</div>
                 </div>
               </div>
             </div>
