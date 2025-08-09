@@ -1,6 +1,14 @@
 import { query } from '../config/dbConnect.js';
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
+import natural from 'natural';
+import pdfjs from 'pdfjs-dist/legacy/build/pdf.js';
+const { getDocument } = pdfjs;
+
+
+// Prevent pdfjs-dist from requiring `canvas`
+global.DOMMatrix = global.DOMMatrix || function () {};
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Extract email from JWT
@@ -10,7 +18,33 @@ const getUserEmail = (req) => {
   return decoded.email;
 };
 
-const MATCHING_API_URL = 'http://localhost:8001/match-jobs'; 
+const TfIdf = natural.TfIdf;
+const MATCHING_API_URL = 'http://localhost:8001/match-jobs';
+
+async function extractPdfText(buffer) {
+  const loadingTask = getDocument({ data: new Uint8Array(buffer) });
+  const pdf = await loadingTask.promise;
+  let text = '';
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(item => item.str).join(' ');
+    text += pageText + '\n';
+  }
+  return text;
+}
+
+function cosineSimilarity(vecA, vecB) {
+  const intersection = Object.keys(vecA).filter(k => vecB[k]);
+  let dotProduct = 0, normA = 0, normB = 0;
+
+  intersection.forEach(k => { dotProduct += vecA[k] * vecB[k]; });
+  Object.values(vecA).forEach(v => { normA += v * v; });
+  Object.values(vecB).forEach(v => { normB += v * v; });
+
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
 
 export const createJob = async (req, res) => {
   try {
@@ -20,12 +54,12 @@ export const createJob = async (req, res) => {
 
     if (!user_id) return res.status(404).json({ message: 'User not found' });
 
-    const { title, description, skills, budget, location } = req.body;
+    const { company_name, title, description, skills, budget, location } = req.body;
 
     await query(
-      `INSERT INTO jobs (user_id, title, description, skills, budget, location)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [user_id, title, description, skills, budget, location]
+      `INSERT INTO jobs (user_id, company_name, title, description, skills, budget, location)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [user_id, company_name, title, description, skills, budget, location]
     );
 
     res.status(201).json({ message: 'Job created successfully' });
@@ -50,6 +84,59 @@ export const listJob = async (req, res) => {
   }
 };
 
+export const matchJobsFromResume = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Resume file is required' });
+    }
+
+    // 1. Extract text from PDF
+    const resumeText = await extractPdfText(req.file.buffer);
+
+    // 2. Fetch jobs from DB
+    const { rows: jobs } = await query(`SELECT * FROM jobs`);
+    if (jobs.length === 0) {
+      return res.json({ matches: [] });
+    }
+
+    // 3. Build TF-IDF model
+    const tfidf = new TfIdf();
+    tfidf.addDocument(resumeText); // doc 0 = resume
+
+    jobs.forEach(job => {
+      const jobSkills = Array.isArray(job.skills)
+        ? job.skills.join(' ')
+        : job.skills || '';
+      const jobText = `${job.title} ${job.description || ''} ${jobSkills}`;
+      tfidf.addDocument(jobText);
+    });
+
+    // 4. Create vector from TF-IDF terms
+    const getVector = (docIndex) => {
+      const vector = {};
+      tfidf.listTerms(docIndex).forEach(term => {
+        vector[term.term] = term.tfidf;
+      });
+      return vector;
+    };
+
+    const resumeVector = getVector(0);
+    const matches = jobs.map((job, idx) => {
+      const jobVector = getVector(idx + 1);
+      const score = cosineSimilarity(resumeVector, jobVector);
+      return { ...job, score };
+    });
+
+    // 5. Sort by similarity
+    matches.sort((a, b) => b.score - a.score);
+
+    res.json({ matches });
+  } catch (err) {
+    console.error('Match jobs error:', err);
+    res.status(500).json({ message: 'Failed to match jobs' });
+  }
+};
+
 export const getJobById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -71,26 +158,6 @@ export const getJobById = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch job' });
   }
 };
-
-
-export const matchJobsFromResume = async (req, res) => {
-  try {
-    const { resume_text } = req.body;
-
-    if (!resume_text || resume_text.trim() === '') {
-      return res.status(400).json({ message: 'Resume text is required.' });
-    }
-
-    // Forward the resume text to the FastAPI NLP service
-    const { data } = await axios.post(MATCHING_API_URL, { resume_text });
-
-    return res.json(data);
-  } catch (error) {
-    console.error('Job match error:', error.message);
-    return res.status(500).json({ message: 'Failed to match jobs' });
-  }
-};
-
 
 export const applyToJob = async (req, res) => {
   try {
@@ -125,5 +192,30 @@ export const applyToJob = async (req, res) => {
   } catch (err) {
     console.error('Job apply error:', err);
     res.status(500).json({ message: 'Failed to apply to job' });
+  }
+};
+
+export const getAppliedJobs = async (req, res) => {
+  try {
+    const email = getUserEmail(req);
+
+    const { rows: userRows } = await query('SELECT id FROM users WHERE email = $1', [email]);
+    const user_id = userRows[0]?.id;
+
+    if (!user_id) return res.status(404).json({ message: 'User not found' });
+
+    const { rows } = await query(
+      `SELECT job_id FROM job_applications WHERE user_id = $1 ORDER BY applied_at DESC`,
+      [user_id]
+    );
+
+    // return plain array of ids for simpler client handling
+    const applied_job_ids = rows.map(r => parseInt(r.job_id, 10));
+
+    res.json({ applied_job_ids });
+  } catch (err) {
+    console.error('Get applied jobs error:', err);
+    const status = err.status || 500;
+    res.status(status).json({ message: err.message || 'Failed to fetch applied jobs' });
   }
 };

@@ -13,7 +13,7 @@ export const sendConnectionRequest = async (req, res) => {
   const { target_id } = req.body;
 
   try {
-    const { rows: requesterRows } = await db.query(
+    const { rows: requesterRows } = await query(
       'SELECT id FROM users WHERE email = $1',
       [email]
     );
@@ -66,7 +66,7 @@ export const getMyConnections = async (req, res) => {
     );
     const user_id = userRows[0].id;
 
-    const { rows } = await db.query(
+    const { rows } = await query(
       `SELECT u.id, u.username, u.full_name, u.profile_picture
        FROM connections c
        JOIN users u ON (u.id = c.requester_id OR u.id = c.target_id)

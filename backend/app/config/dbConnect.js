@@ -21,7 +21,7 @@ export const initDb = async () => {
 
             -- Profile Fields
             full_name TEXT,
-            wallet_address TEXT UNIQUE NOT NULL,
+            wallet_address TEXT UNIQUE,
             location TEXT,
             bio TEXT,
             skills TEXT[], -- PostgreSQL supports string arrays
@@ -68,6 +68,7 @@ export const initDb = async () => {
         CREATE TABLE IF NOT EXISTS jobs (
             id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            company_name TEXT NOT NULL,
             title TEXT NOT NULL,
             description TEXT,
             skills TEXT[],

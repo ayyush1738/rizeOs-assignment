@@ -15,8 +15,7 @@ interface NavbarDemoProps {
 export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) {
     const navItems = [
         { name: "Feed", link: "feed" },
-        { name: "Network", link: "network" },
-        { name: "Jobs", link: "jobs" },
+        { name: "Jobs", link: "jobs" }
     ];
 
     const [showModal, setShowModal] = useState(false);
@@ -45,7 +44,7 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
                 setIsAuthenticated(true);
                 setShowModal(false);
                 setToken(data.token);
-                setUser(data.user); // ✅ SET the user here
+                setUser(data.user); 
 
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
@@ -74,6 +73,11 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
             if (res.ok) {
                 setIsAuthenticated(true);
                 setShowModal(false);
+                setToken(data.token);
+                setUser(data.user); 
+
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
             }
             else {
                 alert(data.message || 'Registration failed');
@@ -85,25 +89,16 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
     };
 
     const handleLogout = () => {
-        // Clear component state
         setIsAuthenticated(false);
         setUser(null);
         setToken(null);
 
-        // Clear persistent local storage
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        
-        alert('You have been logged out.');
-        // Optionally, you could force a page reload or redirect to ensure a clean state
-        // window.location.href = '/'; 
     };
 
 
-    // FIX 2: Create a handler to save the updated profile data from the modal
     const handleProfileSave = (updatedUser: UserProfile, newAvatarFile?: File) => {
-        // In a real-world application, you would handle the file upload to your backend here.
-        // For this example, we'll just log the file and update the user state.
         if (newAvatarFile) {
             console.log("New avatar to upload:", newAvatarFile);
         }

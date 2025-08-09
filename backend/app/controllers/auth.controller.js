@@ -21,12 +21,13 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    await query(
-      'INSERT INTO users (email, username, password) VALUES ($1, $2, $3)',
+    const insertResult = await query(
+      'INSERT INTO users (email, username, password) VALUES ($1, $2, $3) RETURNING *',
       [email, username, password]
     );
 
-    const token = jwt.sign({ email }, JWT_SECRET, {
+    const user = insertResult.rows[0];
+    const token = jwt.sign({ email: user.email, id: user.id }, JWT_SECRET, {
       expiresIn: '6h',
     });
 
@@ -38,12 +39,19 @@ export const register = async (req, res) => {
       maxAge: 6 * 60 * 60 * 1000,
     });
 
-    res.status(201).json({ message: 'Registration successful', token});
+    const { password: _, ...safeUser } = user;
+
+    res.status(201).json({
+      message: 'Registration successful',
+      token,
+      user: safeUser
+    });
   } catch (err) {
     console.error('Registration error:', err);
     res.status(500).json({ message: 'Failed to register user' });
   }
 };
+
 
 export const login = async (req, res) => {
   const { email, password } = req.body;

@@ -13,15 +13,20 @@
   "type": "module",
   "dependencies": {
     "axios": "^1.11.0",
+    "canvas": "^3.1.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
+    "domino": "^2.1.6",
     "dotenv": "^17.2.1",
     "ethers": "^6.15.0",
     "express": "^5.1.0",
+    "form-data": "^4.0.4",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "natural": "^8.1.0",
     "nodemon": "^3.1.10",
-    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^3.4.120",
     "pg": "^8.16.3"
   }
 }
