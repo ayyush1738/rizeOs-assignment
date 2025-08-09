@@ -16,7 +16,7 @@ export const getMyProfile = async (req, res) => {
 
     const { rows } = await query(
       `SELECT id, email, username, full_name, bio, profile_picture, skills,
-              location, address, resume_url
+              location, resume_url
        FROM users WHERE email = $1`,
       [decoded.email]
     );

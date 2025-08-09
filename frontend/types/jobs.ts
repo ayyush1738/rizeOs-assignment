@@ -15,20 +15,29 @@ export interface Job {
   profile_picture?: string;
 }
 
-// components/Jobs/types.ts
-
-// ... (keep the existing Job and MatchedJob types)
-
 export interface CreateJobPayload {
   company_name: string,
   title: string;
   description: string;
   skills: string[];
-  budget: string; // The backend expects a NUMERIC, but sending a string is fine.
+  budget: string;
   location: string;
 }
 
-// This represents the structure returned by your FastAPI matching service
 export interface MatchedJob extends Job {
-    match_score?: number; // Optional score from the matching API
+    match_score?: number;
+}
+
+// ✅ ADD THIS NEW TYPE
+export interface Applicant {
+    id: number;
+    user_id: number;
+    job_id: number;
+    cover_letter: string;
+    status: string;
+    applied_at: string;
+    // Add user details that you expect from the backend API
+    // For example, the user's name and profile picture
+    user_full_name: string;
+    user_profile_picture?: string;
 }

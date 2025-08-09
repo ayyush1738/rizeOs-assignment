@@ -5,11 +5,12 @@ import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Filter, Briefcase, Sparkles, PlusCircle, RefreshCw  } from 'lucide-react';
+import { Search, Filter, Briefcase, Sparkles, PlusCircle, RefreshCw } from 'lucide-react';
 import JobCard from './JobCard';
 import ApplyModal from './ApplyModal';
 import PostJobModal from './PostJobModals';
 import type { Job, MatchedJob, CreateJobPayload } from '@/types/jobs';
+
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -25,6 +26,7 @@ export default function Jobs() {
     const [isPostJobModalOpen, setIsPostJobModalOpen] = useState(false);
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [resumeFile, setResumeFile] = useState<File | null>(null);
+    const [currentUserId, setCurrentUserId] = useState<number | null>(null); // ✅ Track current user's ID
 
 
     const fetchJobs = async () => {
@@ -55,10 +57,40 @@ export default function Jobs() {
             setAppliedJobs([]);
         }
     };
+    
+    // ✅ This function now points to your correct backend route
+     const fetchCurrentUser = async () => {
+        const token = localStorage.getItem('token');
+
+        // --- GUARD CLAUSE ---
+        // If there's no token, don't even try to make the request.
+        if (!token) {
+            console.log("No token found. User is not logged in. Aborting fetchCurrentUser.");
+            return; 
+        }
+
+        try {
+            const { data } = await axios.get(`${API_BASE_URL}/api/v1/user/profile`, {
+                headers: {
+                    // We are now certain that `token` is a valid string here
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (data && data.id) {
+                setCurrentUserId(data.id);
+            }
+        } catch (error) {
+            // The 401 error will still be caught here if the token is present but EXPIRED or INVALID.
+            // This is expected behavior.
+            console.error('Failed to fetch current user (likely invalid/expired token):', error);
+        }
+    };
 
     useEffect(() => {
         fetchJobs();
         fetchAppliedJobs();
+        fetchCurrentUser(); // This is now safe to call on mount
     }, []);
 
 
@@ -77,14 +109,18 @@ export default function Jobs() {
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
 
-            console.log(data)
+            setMatchedJobs([]); 
 
             const jobs = Array.isArray(data.matches)
                 ? data.matches.map(job => ({
                     ...job
                 }))
-                : []; setMatchedJobs(jobs);
-            alert(`Found ${jobs.length} matching jobs!`);
+                : [];
+            setMatchedJobs(jobs);
+            if (jobs.length === 0) {
+                alert("No match found!")
+            }
+
         } catch (error) {
             console.error('Failed to match jobs:', error);
             alert('An error occurred while matching jobs.');
@@ -141,7 +177,6 @@ export default function Jobs() {
 
             alert('Application submitted successfully!');
 
-            // ✅ Mark job as applied
             setAppliedJobs(prev => [...prev, selectedJob.id]);
 
             handleApplyModalClose();
@@ -173,46 +208,47 @@ export default function Jobs() {
     };
 
     const handleRefresh = () => {
-    setSearchTerm('');
-    setLocationFilter('');
-    setResumeFile(null);
-    setMatchedJobs([]);
-    fetchJobs();
-    fetchAppliedJobs();
-};
+        setSearchTerm('');
+        setLocationFilter('');
+        setResumeFile(null);
+        setMatchedJobs([]);
+        fetchJobs();
+        fetchAppliedJobs();
+    };
 
 
     return (
         <div className="w-full bg-white mx-auto p-4 md:p-8 rounded-2xl">
+            {/* Header */}
             <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
-    <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-        <Briefcase className="mr-3" />
-        Find Your Next Opportunity
-    </h1>
-    <div className="flex gap-2">
-        <Button
-            variant="outline"
-            className="flex flex-row items-center"
-            onClick={handleRefresh}
-        >
-            <RefreshCw className="mr-2 h-5 w-5" />
-            Refresh
-        </Button>
-        <Button
-            className="flex flex-row cursor-pointer"
-            onClick={() => setIsPostJobModalOpen(true)}
-        >
-            <PlusCircle className="mr-2 h-5 w-5" />
-            Post a Job
-        </Button>
-    </div>
-</div>
+                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                    <Briefcase className="mr-3" />
+                    Find Your Next Opportunity
+                </h1>
+                <div className="flex gap-2">
+                    <Button
+                        variant="outline"
+                        className="flex flex-row items-center"
+                        onClick={handleRefresh}
+                    >
+                        <RefreshCw className="mr-2 h-5 w-5" />
+                        Refresh
+                    </Button>
+                    <Button
+                        className="flex flex-row cursor-pointer"
+                        onClick={() => setIsPostJobModalOpen(true)}
+                    >
+                        <PlusCircle className="mr-2 h-5 w-5" />
+                        Post a Job
+                    </Button>
+                </div>
+            </div>
 
-
+            {/* Main Content */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Sidebar */}
-                <aside className="lg:col-span-1 space-y-6">
-                    <Card>
+                <aside className="lg:col-span-1 space-y-6 mt-12">
+                     <Card>
                         <CardHeader><CardTitle className="flex items-center text-gray-600"><Filter className="mr-2 h-4 w-4" />Filters</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
                             <Input placeholder="Search job, company..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
@@ -234,20 +270,20 @@ export default function Jobs() {
                                         setResumeFile(e.target.files[0]);
                                     }
                                 }}
-                                className="w-full border rounded-md p-2 text-sm"
+                                className="w-full border text-gray-600 rounded-md p-2 text-sm"
                             />
                             <Button className="w-full mt-2" onClick={handleMatchJobs}>
                                 Find Matches
                             </Button>
                         </CardContent>
                     </Card>
-
                 </aside>
-
+                
+                {/* Job Listings */}
                 <main className="lg:col-span-3 space-y-8">
                     {matchedJobs.length > 0 && (
                         <section>
-                            <h2 className="text-2xl font-bold mb-4 text-gray-800">✨ AI Matched For You</h2>
+                            <h2 className="text-2xl font-bold mb-4 text-gray-800">AI Did It For You</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {matchedJobs.map(job => (
                                     <JobCard
@@ -255,6 +291,7 @@ export default function Jobs() {
                                         job={job}
                                         onApply={handleApplyClick}
                                         isApplied={appliedJobs.includes(job.id)}
+                                        currentUserId={currentUserId} // ✅ Pass current user ID
                                     />
                                 ))}
                             </div>
@@ -272,6 +309,7 @@ export default function Jobs() {
                                         job={job}
                                         onApply={handleApplyClick}
                                         isApplied={appliedJobs.includes(job.id)}
+                                        currentUserId={currentUserId} // ✅ Pass current user ID
                                     />
                                 ))}
                             </div>
@@ -285,7 +323,8 @@ export default function Jobs() {
                     </section>
                 </main>
             </div>
-
+            
+            {/* Modals */}
             <PostJobModal
                 isOpen={isPostJobModalOpen}
                 onClose={() => setIsPostJobModalOpen(false)}

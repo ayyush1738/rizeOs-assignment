@@ -92,6 +92,9 @@ export const matchJobsFromResume = async (req, res) => {
 
     // 1. Extract text from PDF
     const resumeText = await extractPdfText(req.file.buffer);
+    if (!resumeText.trim()) {
+      return res.json({ matches: [] }); // No text → no matches
+    }
 
     // 2. Fetch jobs from DB
     const { rows: jobs } = await query(`SELECT * FROM jobs`);
@@ -127,10 +130,14 @@ export const matchJobsFromResume = async (req, res) => {
       return { ...job, score };
     });
 
-    // 5. Sort by similarity
-    matches.sort((a, b) => b.score - a.score);
+    // 5. Sort & filter by similarity
+    const threshold = 0.05; // tweak as needed
+    const filteredMatches = matches
+      .filter(m => m.score >= threshold)
+      .sort((a, b) => b.score - a.score);
 
-    res.json({ matches });
+    // 6. Return results
+    return res.json({ matches: filteredMatches });
   } catch (err) {
     console.error('Match jobs error:', err);
     res.status(500).json({ message: 'Failed to match jobs' });
