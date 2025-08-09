@@ -36,8 +36,6 @@ export interface Applicant {
     cover_letter: string;
     status: string;
     applied_at: string;
-    // Add user details that you expect from the backend API
-    // For example, the user's name and profile picture
     user_full_name: string;
     user_profile_picture?: string;
 }

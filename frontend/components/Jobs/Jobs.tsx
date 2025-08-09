@@ -5,11 +5,13 @@ import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Filter, Briefcase, Sparkles, PlusCircle, RefreshCw } from 'lucide-react';
+import { Search, Filter, Briefcase, PlusCircle, RefreshCw } from 'lucide-react';
 import JobCard from './JobCard';
 import ApplyModal from './ApplyModal';
 import PostJobModal from './PostJobModals';
-import type { Job, MatchedJob, CreateJobPayload } from '@/types/jobs';
+// ✅ FIXED: Added Applicant to the import list
+import type { Job, MatchedJob, CreateJobPayload, Applicant } from '@/types/jobs';
+import ViewApplicantsModal from './ViewApplicantsModal';
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -19,14 +21,16 @@ export default function Jobs() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [locationFilter, setLocationFilter] = useState('');
-    const [resumeText, setResumeText] = useState('');
     const [matchedJobs, setMatchedJobs] = useState<MatchedJob[]>([]);
     const [appliedJobs, setAppliedJobs] = useState<number[]>([]);
     const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
     const [isPostJobModalOpen, setIsPostJobModalOpen] = useState(false);
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [resumeFile, setResumeFile] = useState<File | null>(null);
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null); // ✅ Track current user's ID
+    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+    const [isApplicantsLoading, setIsApplicantsLoading] = useState(false);
+    const [isViewApplicantsModalOpen, setIsViewApplicantsModalOpen] = useState(false);
+    const [applicants, setApplicants] = useState<Applicant[]>([]);
 
 
     const fetchJobs = async () => {
@@ -57,22 +61,18 @@ export default function Jobs() {
             setAppliedJobs([]);
         }
     };
-    
-    // ✅ This function now points to your correct backend route
-     const fetchCurrentUser = async () => {
+
+    const fetchCurrentUser = async () => {
         const token = localStorage.getItem('token');
 
-        // --- GUARD CLAUSE ---
-        // If there's no token, don't even try to make the request.
         if (!token) {
             console.log("No token found. User is not logged in. Aborting fetchCurrentUser.");
-            return; 
+            return;
         }
 
         try {
             const { data } = await axios.get(`${API_BASE_URL}/api/v1/user/profile`, {
                 headers: {
-                    // We are now certain that `token` is a valid string here
                     'Authorization': `Bearer ${token}`,
                 },
             });
@@ -81,8 +81,6 @@ export default function Jobs() {
                 setCurrentUserId(data.id);
             }
         } catch (error) {
-            // The 401 error will still be caught here if the token is present but EXPIRED or INVALID.
-            // This is expected behavior.
             console.error('Failed to fetch current user (likely invalid/expired token):', error);
         }
     };
@@ -90,8 +88,49 @@ export default function Jobs() {
     useEffect(() => {
         fetchJobs();
         fetchAppliedJobs();
-        fetchCurrentUser(); // This is now safe to call on mount
+        fetchCurrentUser();
     }, []);
+
+    const handleViewApplicantsClick = async (job: Job) => {
+    setSelectedJob(job);
+    setIsViewApplicantsModalOpen(true);
+    setIsApplicantsLoading(true);
+    setApplicants([]);
+
+    try {
+        // ✅ Make sure we're in browser and token is loaded after hydration
+        if (typeof window === 'undefined') {
+            console.warn("Tried to fetch applicants on server side. Aborting.");
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        console.log("Token from localStorage:", token);
+
+        if (!token) {
+            alert('Authentication error: no token found.');
+            setIsApplicantsLoading(false);
+            return;
+        }
+
+        const headers = { Authorization: `Bearer ${token}` };
+        console.log("Axios GET headers:", headers);
+
+        const { data } = await axios.get<{ applicants: Applicant[] }>(
+            `${API_BASE_URL}/api/v1/jobs/${job.id}/applicants`,
+            { headers }
+        );
+
+        console.log("Applicants API response:", data);
+
+        setApplicants(Array.isArray(data.applicants) ? data.applicants : []);
+
+    } catch (error: any) {
+        console.error('Failed to fetch applicants:', error?.response || error);
+    } finally {
+        setIsApplicantsLoading(false);
+    }
+};
 
 
     const handleMatchJobs = async () => {
@@ -109,12 +148,10 @@ export default function Jobs() {
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
 
-            setMatchedJobs([]); 
+            setMatchedJobs([]);
 
             const jobs = Array.isArray(data.matches)
-                ? data.matches.map(job => ({
-                    ...job
-                }))
+                ? data.matches.map(job => ({ ...job }))
                 : [];
             setMatchedJobs(jobs);
             if (jobs.length === 0) {
@@ -176,9 +213,7 @@ export default function Jobs() {
             );
 
             alert('Application submitted successfully!');
-
             setAppliedJobs(prev => [...prev, selectedJob.id]);
-
             handleApplyModalClose();
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || 'Failed to submit application.';
@@ -216,6 +251,38 @@ export default function Jobs() {
         fetchAppliedJobs();
     };
 
+    const handleUpdateApplicantStatus = async (applicationId: number, status: 'accepted' | 'rejected') => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Authentication error.');
+                return;
+            }
+
+            await axios.put(
+                `${API_BASE_URL}/api/v1/applications/${applicationId}/status`,
+                { status },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            setApplicants(prev =>
+                prev.map(app => app.id === applicationId ? { ...app, status } : app)
+            );
+
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || `Failed to update status.`;
+            alert(errorMessage);
+        }
+    };
+
+
+    const handleViewApplicantsModalClose = () => {
+        setIsViewApplicantsModalOpen(false);
+        setSelectedJob(null);
+        setApplicants([]);
+    };
+
+
 
     return (
         <div className="w-full bg-white mx-auto p-4 md:p-8 rounded-2xl">
@@ -248,7 +315,7 @@ export default function Jobs() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Sidebar */}
                 <aside className="lg:col-span-1 space-y-6 mt-12">
-                     <Card>
+                    <Card>
                         <CardHeader><CardTitle className="flex items-center text-gray-600"><Filter className="mr-2 h-4 w-4" />Filters</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
                             <Input placeholder="Search job, company..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
@@ -278,7 +345,7 @@ export default function Jobs() {
                         </CardContent>
                     </Card>
                 </aside>
-                
+
                 {/* Job Listings */}
                 <main className="lg:col-span-3 space-y-8">
                     {matchedJobs.length > 0 && (
@@ -287,11 +354,12 @@ export default function Jobs() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {matchedJobs.map(job => (
                                     <JobCard
-                                        key={job.id}
+                                        key={`matched-${job.id}`}
                                         job={job}
                                         onApply={handleApplyClick}
+                                        onViewApplicants={handleViewApplicantsClick}
                                         isApplied={appliedJobs.includes(job.id)}
-                                        currentUserId={currentUserId} // ✅ Pass current user ID
+                                        currentUserId={currentUserId}
                                     />
                                 ))}
                             </div>
@@ -308,8 +376,9 @@ export default function Jobs() {
                                         key={job.id}
                                         job={job}
                                         onApply={handleApplyClick}
+                                        onViewApplicants={handleViewApplicantsClick}
                                         isApplied={appliedJobs.includes(job.id)}
-                                        currentUserId={currentUserId} // ✅ Pass current user ID
+                                        currentUserId={currentUserId}
                                     />
                                 ))}
                             </div>
@@ -323,7 +392,7 @@ export default function Jobs() {
                     </section>
                 </main>
             </div>
-            
+
             {/* Modals */}
             <PostJobModal
                 isOpen={isPostJobModalOpen}
@@ -337,6 +406,17 @@ export default function Jobs() {
                     onClose={handleApplyModalClose}
                     jobTitle={selectedJob.title}
                     onSubmit={handleApplicationSubmit}
+                />
+            )}
+
+            {isViewApplicantsModalOpen && selectedJob && (
+                <ViewApplicantsModal
+                    isOpen={isViewApplicantsModalOpen}
+                    onClose={handleViewApplicantsModalClose}
+                    jobTitle={selectedJob.title}
+                    applicants={applicants}
+                    onUpdateStatus={handleUpdateApplicantStatus}
+                    isLoading={isApplicantsLoading}
                 />
             )}
         </div>

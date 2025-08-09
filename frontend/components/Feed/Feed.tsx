@@ -167,10 +167,10 @@ export default function TrendingPosts() {
                       <span className="text-xs text-gray-800">•</span>
                       <span className="text-xs text-gray-800">{formatTimeAgo(post.created_at)}</span>
                     </div>
-                    <p className="text-xs text-gray-800">@{post.username}</p>
+                    <p className="text-xs text-gray-800 text-left">@{post.username}</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-900">{post.content}</p>
+                <p className="text-sm text-gray-900 text-left ml-40 bg-gray-200 p-20">{post.content}</p>
                 <div className="flex flex-wrap gap-1">
                   {autoTags(post.content).map((tag) => (
                     <Badge key={tag} variant="secondary" className="text-xs">
