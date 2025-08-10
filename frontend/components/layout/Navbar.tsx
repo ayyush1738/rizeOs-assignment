@@ -121,11 +121,11 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
     return (
         <>
             <header className="w-full bg-white  border-b border-gray-200 dark:border-gray-800 shadow-sm sticky top-0 z-40">
-                <nav className="max-w-7xl mx-auto px-4 sm:px-2 lg:px-2">
+                <nav className="max-w-7xl mx-20 px-4 px-auto sm:px-2 lg:px-2">
                     <div className="flex items-center h-16">
-                        <div className="flex-1">
+                        <div className="flex-1 mr-40">
                             <div className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-                                Vaultify
+                                RizeOs
                             </div>
                         </div>
 

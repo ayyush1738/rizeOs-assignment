@@ -10,7 +10,7 @@ export const query = (text, params) => pool.query(text, params);
 export const initDb = async () => {
     try {
         const client = await pool.connect();
-        console.log('✅ Connected to the PostgreSQL database.');
+        console.log('Connected to the PostgreSQL database.');
 
         const createTables = `
             CREATE TABLE IF NOT EXISTS users (
@@ -81,9 +81,9 @@ export const initDb = async () => {
 
         await client.query(createTables);
         client.release();
-        console.log('✅ Tables ensured for Vaultify EVM architecture.');
+        console.log('Tables ensured for Vaultify EVM architecture.');
     } catch (err) {
-        console.error('❌ Database initialization error:', err.stack);
+        console.error('Database initialization error:', err.stack);
     }
 };
 

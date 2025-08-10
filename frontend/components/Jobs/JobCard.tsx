@@ -3,16 +3,8 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, DollarSign, Users } from 'lucide-react'; // Import Users icon
-import type { Job } from '@/types/jobs';
-
-interface JobCardProps {
-  job: Job;
-  onApply: (job: Job) => void;
-  onViewApplicants: (job: Job) => void; // ✅ Add this new prop
-  isApplied: boolean;
-  currentUserId: number | null;
-}
+import { MapPin, DollarSign, Users } from 'lucide-react'; 
+import type { JobCardProps } from '@/types/jobs';
 
 export default function JobCard({ job, onApply, onViewApplicants, isApplied, currentUserId }: JobCardProps) {
   const isPoster = job.user_id === currentUserId;
@@ -41,7 +33,6 @@ export default function JobCard({ job, onApply, onViewApplicants, isApplied, cur
         </div>
       </CardContent>
       <CardFooter>
-        {/* ✅ Updated Conditional Rendering Logic */}
         {isPoster ? (
           <Button
             className='w-full'

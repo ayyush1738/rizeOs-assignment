@@ -5,13 +5,7 @@
 import { useState, FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
-
-interface ApplyModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  jobTitle: string;
-  onSubmit: (coverLetter: string) => Promise<void>;
-}
+import type { ApplyModalProps } from '@/types/jobs'
 
 export default function ApplyModal({ isOpen, onClose, jobTitle, onSubmit }: ApplyModalProps) {
   const [coverLetter, setCoverLetter] = useState('');

@@ -8,9 +8,8 @@ import { User, LogOut } from 'lucide-react';
 interface ProfileAvatarProps {
     user: UserProfile;
     onLogout: () => void;
-    onEditProfile: () => void; // New prop to signal opening the settings modal
+    onEditProfile: () => void; 
 }
-
 export default function ProfileAvatar({ user, onLogout, onEditProfile }: ProfileAvatarProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -36,8 +35,6 @@ export default function ProfileAvatar({ user, onLogout, onEditProfile }: Profile
                         {user.username?.charAt(0).toUpperCase() || "U"}
                     </AvatarFallback>
                 </Avatar>
-
-
 
             </button>
 

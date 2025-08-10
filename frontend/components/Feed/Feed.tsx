@@ -7,33 +7,19 @@ import { TrendingUp, MessageCircle, Heart, Share, Plus } from 'lucide-react';
 import CreatePost from './CreatePosts';
 import CommentSection from './commentSection';
 import UserProfilePopup from '@/components/ui/ViewUsrProfile'; // <-- IMPORT THE POPUP
+import type { Post } from '@/types/Post';
 
-interface Post {
-  id: string;
-  content: string;
-  created_at: string;
-  full_name: string;
-  username: string;
-  profile_picture: string;
-  likes: number;
-  comments: number;
-  shares: number;
-  liked_by_user?: boolean;
-}
 
 export default function TrendingPosts() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreatePost, setShowCreatePost] = useState(false);
-  const [commentBoxOpenFor, setCommentBoxOpenFor] = useState<string | null>(null);
+  const [commentBoxOpenFor, setCommentBoxOpenFor] = useState<number | null>(null);
   const [commentText, setCommentText] = useState('');
-
-  // --- ADDED: State for managing the profile popup ---
   const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
 
   const getAuthToken = () => localStorage.getItem('token');
   
-  // --- ADDED: Handlers to open and close the popup ---
   const handleViewProfile = (username: string) => {
     setSelectedUsername(username);
   };
@@ -62,7 +48,7 @@ export default function TrendingPosts() {
     fetchPosts();
   }, []);
 
-  const handleLike = async (postId: string) => {
+  const handleLike = async (postId: number) => {
     const token = getAuthToken();
     if (!token) {
       alert("Please, Login or Signup first");
@@ -72,10 +58,8 @@ export default function TrendingPosts() {
 
     const originalPosts = [...posts];
 
-    // Optimistic UI update
     setPosts(currentPosts => currentPosts.map(p => {
       if (p.id === postId) {
-        // A more robust toggle would check liked_by_user status
         return { ...p, likes: p.likes + 1 };
       }
       return p;
@@ -88,17 +72,17 @@ export default function TrendingPosts() {
       });
 
       if (!res.ok) {
-        setPosts(originalPosts); // Revert on failure
+        setPosts(originalPosts); 
         throw new Error('Failed to like post');
       }
-      fetchPosts(); // Re-fetch to get accurate data
+      fetchPosts(); 
     } catch (err) {
       console.error('Error liking post:', err);
       setPosts(originalPosts);
     }
   };
 
-  const handleCommentSubmit = async (postId: string) => {
+  const handleCommentSubmit = async (postId: number) => {
     const token = getAuthToken();
     if (!token) {
       alert("Please, Login or Signup first");
@@ -118,11 +102,8 @@ export default function TrendingPosts() {
       });
 
       if (!res.ok) throw new Error('Failed to submit comment');
-
       setCommentText('');
-      // NOTE: We keep the comment box open to see the new comment appear
-      fetchPosts(); // Refresh posts to update comment count
-
+      fetchPosts();
     } catch (err) {
       console.error('Error submitting comment:', err);
     }
@@ -131,8 +112,7 @@ export default function TrendingPosts() {
   return (
     <>
       <div className="w-full bg-white mx-auto p-8 rounded-2xl relative flex flex-col h-[500px]">
-        {/* ... (header and create post button UI) ... */}
-        <div className="mb-8 flex-shrink-0"> {/* Header section */}
+        <div className="mb-8 flex-shrink-0"> 
         <div className="text-lg flex text-black items-center">
           <TrendingUp className="w-5 h-5 mr-2 text-orange-500" />
           Trending Posts
@@ -165,7 +145,6 @@ export default function TrendingPosts() {
               {posts.map((post) => (
                 <div key={post.id} className="space-y-3 border-b pb-4">
                   <div className="flex items-start space-x-3">
-                    {/* --- MODIFIED: Add onClick to the avatar --- */}
                     <div onClick={() => handleViewProfile(post.username)} className="cursor-pointer">
                       <Avatar className="w-10 h-10 bg-purple-600">
                         <AvatarImage src={post.profile_picture} alt={post.full_name} />
@@ -173,7 +152,6 @@ export default function TrendingPosts() {
                       </Avatar>
                     </div>
                     <div className="flex-1">
-                      {/* --- MODIFIED: Add onClick to the user's name --- */}
                       <div onClick={() => handleViewProfile(post.username)} className="cursor-pointer">
                         <div className="flex items-center space-x-2">
                           <h4 className="font-medium text-gray-600 text-sm hover:underline text-left">{post.full_name}</h4>
@@ -184,7 +162,6 @@ export default function TrendingPosts() {
                       </div>
                     </div>
                   </div>
-                  {/* ... (rest of the post JSX) ... */}
                   <p className="text-sm text-gray-900 text-left bg-gray-200 p-10 rounded-2xl">{post.content}</p>
                 <div className="flex flex-wrap gap-1">
                   {autoTags(post.content).map((tag) => (
@@ -193,8 +170,6 @@ export default function TrendingPosts() {
                     </Badge>
                   ))}
                 </div>
-
-                {/* ACTION BUTTONS */}
                 <div className="flex items-center justify-between text-xs text-gray-800 pt-2">
                   <div className="flex items-center space-x-4">
                     <div
@@ -240,8 +215,6 @@ export default function TrendingPosts() {
           )}
         </div>
       </div>
-
-      {/* --- ADDED: Conditionally render the popup --- */}
       {selectedUsername && (
         <UserProfilePopup
           isOpen={!!selectedUsername}

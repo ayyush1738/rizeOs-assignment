@@ -54,7 +54,7 @@ export default function CreatePost({ onPostCreated }: { onPostCreated?: () => vo
         placeholder="Write your post..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        className="w-full min-h-[100px]"
+        className="w-full text-black min-h-[100px]"
       />
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
       <Button className="mt-2 cursor-pointer" onClick={handleSubmit} disabled={submitting}>

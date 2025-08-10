@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Applicant } from '@/types/jobs';
+import type { Applicant, ViewApplicantsModalProps } from '@/types/jobs';
 import { Check, X, XCircle } from 'lucide-react'; // Import XCircle for the close button
 import { useEffect, useState } from 'react';
 import UserProfilePopup from '@/components/ui/ViewUsrProfile'; // <-- IMPORT THE POPUP

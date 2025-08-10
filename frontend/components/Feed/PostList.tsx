@@ -3,17 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-
-type Post = {
-  id: number;
-  content: string;
-  created_at: string;
-  full_name: string;
-  username: string;
-  profile_picture: string;
-  likes: number;
-  comments: number;
-};
+import type { Post } from '@/types/Post';
 
 export default function PostList() {
   const [posts, setPosts] = useState<Post[]>([]);

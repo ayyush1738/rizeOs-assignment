@@ -1,24 +1,8 @@
-// components/CommentSection.tsx
-
 import { useState, useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import type { Comment, CommentSectionProps} from '@/types/Comments';
 
-// Define the shape of a single comment
-interface Comment {
-  comment: string;
-  created_at: string;
-  full_name: string;
-  username: string;
-  profile_picture: string;
-}
 
-// Define the props the component will accept
-interface CommentSectionProps {
-  postId: string;
-  token: string | null;
-}
-
-// Utility to format timestamp to "2h ago", etc.
 function formatTimeAgo(timestamp: string): string {
     const now = new Date();
     const created = new Date(timestamp);
@@ -60,8 +44,7 @@ export default function CommentSection({ postId, token }: CommentSectionProps) {
     };
 
     fetchComments();
-  }, [postId, token]); // Re-run effect if postId or token changes
-
+  }, [postId, token]); 
   if (isLoading) {
     return <p className="text-xs text-gray-500 text-center p-4">Loading comments...</p>;
   }
@@ -73,9 +56,9 @@ export default function CommentSection({ postId, token }: CommentSectionProps) {
       ) : (
         comments.map((comment, index) => (
           <div key={index} className="flex items-start space-x-3">
-            <Avatar className="w-8 h-8">
-              <AvatarImage src={comment.profile_picture} alt={comment.full_name} />
-              <AvatarFallback>{comment.full_name.charAt(0)}</AvatarFallback>
+            <Avatar className="w-8 h-8 bg-gray-800">
+              <AvatarImage src={comment.profile_picture} alt={comment.username} />
+              <AvatarFallback>{comment.username.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="flex-1 bg-gray-100 p-3 rounded-lg">
               <div className="flex items-center space-x-2">
@@ -83,7 +66,7 @@ export default function CommentSection({ postId, token }: CommentSectionProps) {
                 <span className="text-xs text-gray-500">•</span>
                 <span className="text-xs text-gray-500">{formatTimeAgo(comment.created_at)}</span>
               </div>
-              <p className="text-xs text-gray-700 mt-1">{comment.comment}</p>
+              <p className="text-xs text-gray-700 mt-1 text-left">{comment.comment}</p>
             </div>
           </div>
         ))

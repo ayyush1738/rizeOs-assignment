@@ -6,8 +6,7 @@ import { Search, X } from "lucide-react";
 import axios from "axios";
 import TrendingPosts from "../Feed/Feed";
 import Jobs from "../Jobs/Jobs";
-import Networks from "../Network/Network";
-
+import { Job, HeroProps } from '@/types/Hero'
 const roles = [
   "Frontend Developer",
   "Backend Developer",
@@ -15,21 +14,6 @@ const roles = [
   "Full Stack",
   "Product Designer",
 ];
-
-// Define a type for the component's props
-interface HeroProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-}
-
-interface Job {
-  job_id: string;
-  job_title: string;
-  job_location: string;
-  job_apply_link: string;
-  employer_name: string | null;
-  job_description: string | null;
-}
 
 export default function Hero({ activeTab, setActiveTab }: HeroProps) {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
@@ -53,8 +37,6 @@ export default function Hero({ activeTab, setActiveTab }: HeroProps) {
     setLoading(true);
     setError(null);
 
-    // Combine query and roles to make search query string
-    // e.g. "Node.js developer Frontend Developer Backend Developer"
     const combinedQuery = [query, ...selectedRoles].join(" ").trim();
     const encodedQuery = encodeURIComponent(combinedQuery);
 
@@ -69,7 +51,7 @@ export default function Hero({ activeTab, setActiveTab }: HeroProps) {
         method: "GET",
         url: `https://jsearch.p.rapidapi.com/search?query=${encodedQuery}`,
         headers: {
-          "X-Rapidapi-Key": "2ea668dfc1msh7821db762f3d659p15f4f6jsn1129cbd162d9", // Replace with your API key
+          "X-Rapidapi-Key": process.env.NEXT_PUBLIC_RAPID_API, 
           "X-Rapidapi-Host": "jsearch.p.rapidapi.com",
         },
       };
