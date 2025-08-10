@@ -1,9 +1,11 @@
 import { Router } from 'express';
-import { getMyProfile, updateMyProfile } from "../controllers/user.controller.js";
+import { getMyProfile, getUserProfile, updateMyProfile, getApplicants } from "../controllers/user.controller.js";
 import { sendConnectionRequest, acceptConnectionRequest, getMyConnections } from '../controllers/network.controller.js';
 
 const router = Router();
 
+router.get('/:id/applicants', getApplicants);
+router.get('/profile/:username', getUserProfile)
 router.get('/profile', getMyProfile);
 router.put('/profile', updateMyProfile);
 router.post('/request', sendConnectionRequest);

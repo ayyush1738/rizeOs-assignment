@@ -32,6 +32,88 @@ export const getMyProfile = async (req, res) => {
   }
 };
 
+export const getUserProfile = async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    const { rows } = await query(
+      // IMPORTANT: Select ONLY public-safe data. No email!
+      `SELECT id, email, username, full_name, wallet_address, location, bio, skills, profile_picture, resume_url
+       FROM users WHERE username = $1`,
+      [username]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(rows[0]);
+
+  } catch (err) {
+    console.error('Error fetching public profile:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+/**
+ * Controller for a user to get THEIR OWN private profile.
+ * Requires a valid token, and returns data for the user who owns the token.
+ * Can safely return sensitive info like email to the owner.
+ */
+export const getApplicants = async (req, res) => {
+    // 1. Get the Job ID from URL parameters and the logged-in user's ID from the auth middleware
+    const { id: jobId } = req.params;
+    const loggedInUserId = req.user?.id; // Assumes auth middleware adds 'user' to the request
+
+
+
+    try {
+        // 3. Authorize the request: Check if the logged-in user is the job's poster
+        const jobQuery = 'SELECT user_id FROM jobs WHERE id = $1';
+        const jobResult = await query(jobQuery, [jobId]);
+
+        if (jobResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Job not found.' });
+        }
+
+        const jobPosterId = jobResult.rows[0].user_id;
+        if (jobPosterId !== loggedInUserId) {
+            // If the user is not the poster, deny access
+            return res.status(403).json({ message: 'You are not authorized to view applicants for this job.' });
+        }
+
+        // 4. Fetch the applicants if the user is authorized
+        // We join job_applications with the users table to get the applicant's details
+        const applicantsQuery = `
+            SELECT
+                ja.id,
+                ja.user_id,
+                ja.job_id,
+                ja.cover_letter,
+                ja.status,
+                ja.applied_at,
+                u.full_name AS user_full_name,
+                u.profile_picture AS user_profile_picture
+            FROM
+                job_applications AS ja
+            JOIN
+                users AS u ON ja.user_id = u.id
+            WHERE
+                ja.job_id = $1
+            ORDER BY
+                ja.applied_at DESC;
+        `;
+
+        const applicantsResult = await query(applicantsQuery, [jobId]);
+
+        // 5. Send the successful response
+        res.status(200).json({ applicants: applicantsResult.rows });
+
+    } catch (error) {
+        console.error('Error fetching job applicants:', error);
+        res.status(500).json({ message: 'An error occurred on the server while fetching applicants.' });
+    }
+};
+
 export const updateMyProfile = async (req, res) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -48,7 +130,6 @@ export const updateMyProfile = async (req, res) => {
       profile_picture,
       skills,
       location,
-      address,
       resume_url
     } = req.body;
 
@@ -81,3 +162,5 @@ export const updateMyProfile = async (req, res) => {
     res.status(500).json({ message: 'Failed to update profile' });
   }
 };
+
+

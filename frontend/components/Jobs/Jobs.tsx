@@ -99,10 +99,7 @@ export default function Jobs() {
 
     try {
         // ✅ Make sure we're in browser and token is loaded after hydration
-        if (typeof window === 'undefined') {
-            console.warn("Tried to fetch applicants on server side. Aborting.");
-            return;
-        }
+        
 
         const token = localStorage.getItem('token');
         console.log("Token from localStorage:", token);

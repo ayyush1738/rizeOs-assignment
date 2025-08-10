@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Upload, X, User, Briefcase, MapPin, Loader2 } from 'lucide-react'; // Added Loader2 for loading icon
+// ADDED: Link icon for the resume field for better UI context
+import { Upload, X, User, Briefcase, MapPin, Loader2, Link as LinkIcon } from 'lucide-react';
 import type { UserProfile } from '@/types/UserProfile';
 import { ConnectButton } from '@/components/ConnectButton';
 import { useAccount } from 'wagmi';
@@ -17,11 +18,13 @@ interface ProfileSettingsModalProps {
 
 
 export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, token }: ProfileSettingsModalProps) {
+  // CHANGED: Added resume_url to the initial form state
   const [formData, setFormData] = useState({
     username: user?.username || '',
     email: user?.email || '',
     bio: user?.bio || '',
-    location: user?.location || ''
+    location: user?.location || '',
+    resume_url: user?.resume_url || ''
   });
   const [skills, setSkills] = useState<string[]>(user?.skills || []);
   const [newSkill, setNewSkill] = useState('');
@@ -29,32 +32,29 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
   const [avatarPreview, setAvatarPreview] = useState<string>(user?.avatar || '');
   const { address, isConnecting } = useAccount();
   
-
-  // Add state for loading and error handling
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const suggestedSkills = ['JavaScript', 'Python', 'React', 'Node.js', 'TypeScript', 'AWS'];
 
-  // Reset form when user data or the modal is opened/closed
   useEffect(() => {
     if (user) {
+      // CHANGED: Reset resume_url along with other form fields
       setFormData({
         username: user.username || '',
         email: user.email || '',
         bio: user.bio || '',
-        location: user.location || ''
+        location: user.location || '',
+        resume_url: user.resume_url || ''
       });
       setSkills(user.skills || []);
       setAvatarPreview(user.avatar || '');
       setAvatarFile(null);
-      setError(null); // Clear previous errors
+      setError(null);
     }
   }, [user, isOpen]);
 
-  // --- HANDLER FUNCTIONS ---
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -80,19 +80,13 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
   };
 
   const handleSaveChanges = async () => {
-    // --- Start loading and clear previous errors ---
     setIsLoading(true);
     setError(null);
+    
+    const newAvatarUrl = user.avatar; 
 
-    // --- In a real app, you would upload the avatarFile here ---
-    // 1. Get a pre-signed URL from your backend.
-    // 2. Upload the `avatarFile` to that URL.
-    // 3. Get the final URL of the uploaded image.
-    // For now, we'll assume the `profile_picture` is just a string URL.
-    const newAvatarUrl = user.avatar; // Replace with the actual URL after upload
-
-    // --- Prepare the payload for the backend ---
-    // This object's keys MUST match what your Express `updateMyProfile` expects
+    // CHANGED: Added resume_url to the payload being sent to the backend.
+    // This now matches the fields expected by your `updateMyProfile` controller.
     const payload = {
       full_name: formData.username,
       wallet_address: address,
@@ -100,6 +94,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
       profile_picture: newAvatarUrl,
       skills: skills,
       location: formData.location,
+      resume_url: formData.resume_url, // Added resume URL to the payload
     };
 
     try {
@@ -107,7 +102,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // Use the token for authentication
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
@@ -115,12 +110,11 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
       const result = await response.json();
 
       if (!response.ok) {
-        // If the server returns an error (e.g., 400, 401, 500)
         throw new Error(result.message || 'An unknown error occurred.');
       }
 
-      // --- Success ---
-      // Create the updated user object for the parent component's state
+      // NOTE: No change needed here. Because `resume_url` is now part of `formData`,
+      // spreading `...formData` automatically includes it in the updated user profile.
       const updatedUser: UserProfile = {
         ...user,
         ...formData,
@@ -128,15 +122,13 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
         avatar: avatarPreview,
       };
 
-      // Call the parent's onSave to update the UI instantly
       onSave(updatedUser, avatarFile || undefined);
-      onClose(); // Close the modal on success
+      onClose();
 
     } catch (err: any) {
       console.error('Failed to update profile:', err);
-      setError(err.message); // Display the error message in the UI
+      setError(err.message);
     } finally {
-      // --- Stop loading, regardless of outcome ---
       setIsLoading(false);
     }
   };
@@ -148,13 +140,12 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
   const cardTitleStyles = "text-lg font-semibold text-gray-900 flex items-center gap-2";
   const cardContentStyles = "p-5";
   const labelStyles = "block text-sm font-medium text-gray-700 mb-1";
-  const inputStyles = "w-3/4 text-gray-600 px-3 py-2 border border-black rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
+  const inputStyles = "w-3/4 text-gray-700 px-3 py-2 border border-black rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
   const buttonStyles = "inline-flex  items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
       <div className="relative bg-gray-50 rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] overflow-hidden flex flex-col">
-        {/* Modal Header */}
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-2xl font-bold text-gray-900">Profile Settings</h2>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-200 transition-colors">
@@ -162,11 +153,8 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
           </button>
         </div>
 
-        {/* Scrollable Content */}
         <div className="flex-grow overflow-y-auto p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-            {/* --- Left Column: Profile Preview --- */}
             <div className="lg:col-span-1">
               <div className={`${cardStyles} sticky top-0`}>
                 <div className={cardHeaderStyles}>
@@ -195,8 +183,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
                 </div>
               </div>
             </div>
-
-            {/* --- Right Column: Settings Form --- */}
+            
             <div className="lg:col-span-2 space-y-6">
               <div className={cardStyles}>
                 <div className={cardHeaderStyles}><h3 className={cardTitleStyles}><User size={20} /> Basic Information</h3></div>
@@ -215,13 +202,30 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
                     <label htmlFor="bio" className={labelStyles}>Bio</label>
                     <textarea id="bio" rows={3} className={inputStyles} value={formData.bio} onChange={(e) => handleInputChange('bio', e.target.value)} />
                   </div>
-                  <div>
-                    <label htmlFor="location" className={labelStyles}>Location</label>
-                    <input id="location" type="text" className={inputStyles} value={formData.location} onChange={(e) => handleInputChange('location', e.target.value)} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div>
+                        <label htmlFor="location" className={labelStyles}>Location</label>
+                        <input id="location" type="text" className={inputStyles} value={formData.location} onChange={(e) => handleInputChange('location', e.target.value)} />
+                     </div>
+                     {/* --- ADDED: Resume URL Input Field --- */}
+                     <div>
+                        <label htmlFor="resume_url" className={labelStyles}>LinkedIn URL</label>
+                        <div className="relative">
+                           <input
+                              id="resume_url"
+                              type="url"
+                              className={`${inputStyles} pl-2`} // Add padding for the icon
+                              placeholder="https://linkedin.com/in/user"
+                              value={formData.resume_url}
+                              onChange={(e) => handleInputChange('resume_url', e.target.value)}
+                           />
+                        </div>
+                     </div>
                   </div>
                 </div>
               </div>
 
+              {/* ... (rest of the component JSX is unchanged) ... */}
               <div className={cardStyles}>
                 <div className={cardHeaderStyles}><h3 className={cardTitleStyles}><Briefcase size={20} /> Skills & Expertise</h3></div>
                 <div className={`${cardContentStyles} space-y-4`}>
@@ -240,19 +244,13 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
                   <div className="flex flex-wrap gap-2 text-black">{suggestedSkills.filter(s => !skills.includes(s)).map((skill) => (<button key={skill} onClick={() => handleAddSkill(skill)} className="px-2 py-1 text-xs border border-gray-300 rounded-md hover:bg-gray-100">+ {skill}</button>))}</div>
                 </div>
               </div>
-
               <div className={cardStyles}>
                 <div className={cardHeaderStyles}>
                   <h3 className={cardTitleStyles}>Connect Your Wallet</h3>
                 </div>
                 <div className={`${cardContentStyles} space-y-4`}>
                   <div className="flex gap-2">
-                    <input
-                      value={address}
-                      readOnly
-                      placeholder="0x..."
-                      className={inputStyles}
-                    />
+                    <input value={address} readOnly placeholder="0x..." className={inputStyles}/>
                     <ConnectButton />
                   </div>
                 </div>
@@ -261,25 +259,17 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
           </div>
         </div>
 
-        {/* --- MODAL FOOTER WITH UI FEEDBACK --- */}
         <div className="flex flex-col items-center p-4 border-t bg-white">
-          {/* Error Message */}
           {error && (
             <div className="text-center mb-2 text-sm text-red-600 bg-red-100 p-2 rounded-md w-full">
               <strong>Update Failed:</strong> {error}
             </div>
           )}
           <div className="flex justify-end w-full">
-            <button
-              onClick={onClose}
-              disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md mr-2 transition-colors disabled:opacity-50">
+            <button onClick={onClose} disabled={isLoading} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md mr-2 transition-colors disabled:opacity-50">
               Cancel
             </button>
-            <button
-              onClick={handleSaveChanges}
-              disabled={isLoading}
-              className={`${buttonStyles} px-6 py-2 min-w-[120px]`}>
+            <button onClick={handleSaveChanges} disabled={isLoading} className={`${buttonStyles} px-6 py-2 min-w-[120px]`}>
               {isLoading ? <Loader2 className="w-5 h-5 mx-auto animate-spin" /> : 'Save Changes'}
             </button>
           </div>
@@ -288,3 +278,4 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
     </div>
   );
 }
+

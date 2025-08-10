@@ -5,7 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, MessageCircle, Heart, Share, Plus } from 'lucide-react';
 import CreatePost from './CreatePosts';
-import CommentSection from './commentSection'; // <-- IMPORT THE NEW COMPONENT
+import CommentSection from './commentSection';
+import UserProfilePopup from '@/components/ui/ViewUsrProfile'; // <-- IMPORT THE POPUP
 
 interface Post {
   id: string;
@@ -27,8 +28,17 @@ export default function TrendingPosts() {
   const [commentBoxOpenFor, setCommentBoxOpenFor] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
 
-  const getAuthToken = () => {
-    return localStorage.getItem('token');
+  // --- ADDED: State for managing the profile popup ---
+  const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
+
+  const getAuthToken = () => localStorage.getItem('token');
+  
+  // --- ADDED: Handlers to open and close the popup ---
+  const handleViewProfile = (username: string) => {
+    setSelectedUsername(username);
+  };
+  const handleCloseProfile = () => {
+    setSelectedUsername(null);
   };
 
   const fetchPosts = async () => {
@@ -119,9 +129,10 @@ export default function TrendingPosts() {
   };
 
   return (
-    // We add flexbox layout to the main container to better control the child elements
-    <div className="w-full bg-white mx-auto p-8 rounded-2xl relative flex flex-col h-[500px]">
-      <div className="mb-8 flex-shrink-0"> {/* Header section */}
+    <>
+      <div className="w-full bg-white mx-auto p-8 rounded-2xl relative flex flex-col h-[500px]">
+        {/* ... (header and create post button UI) ... */}
+        <div className="mb-8 flex-shrink-0"> {/* Header section */}
         <div className="text-lg flex text-black items-center">
           <TrendingUp className="w-5 h-5 mr-2 text-orange-500" />
           Trending Posts
@@ -146,33 +157,35 @@ export default function TrendingPosts() {
           />
         </div>
       )}
-
-      {/* This new div will be our scrollable container */}
-      <div className="flex-grow overflow-y-auto pr-4">
-        {loading ? (
-          <p className="text-center text-sm text-gray-500">Loading...</p>
-        ) : posts.length === 0 ? (
-          <p className="text-center text-sm text-gray-500">No posts yet.</p>
-        ) : (
-          <div className="space-y-6">
-            {posts.map((post) => (
-              <div key={post.id} className="space-y-3 border-b pb-4">
-                {/* Post header and content... (same as before) */}
-                <div className="flex items-start space-x-3">
-                  <Avatar className="w-10 h-10 bg-purple-600">
-                    <AvatarImage src={post.profile_picture} alt={post.full_name} />
-                    <AvatarFallback>{post.full_name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <h4 className="font-medium text-gray-600 text-sm">{post.full_name}</h4>
-                      <span className="text-xs text-gray-800">•</span>
-                      <span className="text-xs text-gray-800">{formatTimeAgo(post.created_at)}</span>
+        <div className="flex-grow overflow-y-auto pr-4">
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <div className="space-y-6">
+              {posts.map((post) => (
+                <div key={post.id} className="space-y-3 border-b pb-4">
+                  <div className="flex items-start space-x-3">
+                    {/* --- MODIFIED: Add onClick to the avatar --- */}
+                    <div onClick={() => handleViewProfile(post.username)} className="cursor-pointer">
+                      <Avatar className="w-10 h-10 bg-purple-600">
+                        <AvatarImage src={post.profile_picture} alt={post.full_name} />
+                        <AvatarFallback>{post.username.charAt(0)}</AvatarFallback>
+                      </Avatar>
                     </div>
-                    <p className="text-xs text-gray-800 text-left">@{post.username}</p>
+                    <div className="flex-1">
+                      {/* --- MODIFIED: Add onClick to the user's name --- */}
+                      <div onClick={() => handleViewProfile(post.username)} className="cursor-pointer">
+                        <div className="flex items-center space-x-2">
+                          <h4 className="font-medium text-gray-600 text-sm hover:underline text-left">{post.full_name}</h4>
+                          <span className="text-xs text-gray-800">•</span>
+                          <span className="text-xs text-gray-800">{formatTimeAgo(post.created_at)}</span>
+                        </div>
+                        <p className="text-xs text-gray-800 text-left">@{post.username}</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <p className="text-sm text-gray-900 text-left bg-gray-200 p-10 rounded-2xl">{post.content}</p>
+                  {/* ... (rest of the post JSX) ... */}
+                  <p className="text-sm text-gray-900 text-left bg-gray-200 p-10 rounded-2xl">{post.content}</p>
                 <div className="flex flex-wrap gap-1">
                   {autoTags(post.content).map((tag) => (
                     <Badge key={tag} variant="secondary" className="text-xs">
@@ -188,12 +201,7 @@ export default function TrendingPosts() {
                       className="flex items-center space-x-1 hover:text-red-500 cursor-pointer"
                       onClick={() => handleLike(post.id)}
                     >
-                      <Heart
-  className={`w-4 h-4 cursor-pointer transition-colors duration-200 ${
-    post.liked_by_user ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
-  }`}
-/>
-
+                      <Heart className="w-4 h-4" />
                       <span>{post.likes}</span>
                     </div>
                     <div
@@ -206,8 +214,6 @@ export default function TrendingPosts() {
                   </div>
                   <Share className="w-4 h-4 hover:text-green-500 cursor-pointer" />
                 </div>
-
-                {/* COMBINED COMMENT INPUT AND LIST SECTION */}
                 {commentBoxOpenFor === post.id && (
                   <div className="pt-2">
                     <div className="flex items-center space-x-2">
@@ -228,15 +234,25 @@ export default function TrendingPosts() {
                     <CommentSection postId={post.id} token={getAuthToken()} />
                   </div>
                 )}
-              </div>
-            ))}
-          </div>
-        )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* --- ADDED: Conditionally render the popup --- */}
+      {selectedUsername && (
+        <UserProfilePopup
+          isOpen={!!selectedUsername}
+          onClose={handleCloseProfile}
+          username={selectedUsername}
+          token={getAuthToken()}
+        />
+      )}
+    </>
   );
 }
-
 function formatTimeAgo(timestamp: string): string {
   const now = new Date();
   const created = new Date(timestamp);
@@ -247,7 +263,6 @@ function formatTimeAgo(timestamp: string): string {
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   return `${Math.floor(diff / 86400)}d ago`;
 }
-
 function autoTags(content: string): string[] {
   const tags: string[] = [];
   const lower = content.toLowerCase();

@@ -154,7 +154,7 @@ export default function Hero({ activeTab, setActiveTab }: HeroProps) {
 
         {/* Popup for job results */}
         {showPopup && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start pt-20 z-50">
+          <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex justify-center items-start pt-20 z-50">
             <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[80vh] overflow-auto p-6 relative">
               <button
                 className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
@@ -163,20 +163,20 @@ export default function Hero({ activeTab, setActiveTab }: HeroProps) {
               >
                 <X size={24} />
               </button>
-              <h2 className="text-2xl font-semibold mb-4">Job Results</h2>
+              <h2 className="text-2xl text-blue-900 font-semibold mb-4">Job Results</h2>
               {jobs.length === 0 && <p>No jobs found for your search.</p>}
               <div className="space-y-4">
                 {jobs.map((job) => (
                   <div
                     key={job.job_id}
-                    className="border rounded-md p-4 hover:shadow-md transition"
+                    className="border-2 rounded-md p-4 hover:shadow-md transition"
                   >
-                    <h3 className="text-lg font-bold">{job.job_title}</h3>
+                    <h3 className="text-lg text-gray-600 font-bold">{job.job_title}</h3>
                     <p className="text-sm text-gray-600">
                       {job.employer_name} — {job.job_location}
                     </p>
                     {job.job_description && (
-                      <p className="mt-2 text-sm line-clamp-3">{job.job_description}</p>
+                      <p className="mt-2 text-black text-sm line-clamp-3">{job.job_description}</p>
                     )}
                     <a
                       href={job.job_apply_link}
