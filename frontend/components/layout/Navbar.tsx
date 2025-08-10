@@ -1,4 +1,3 @@
-// components/NavbarDemo.tsx
 "use client";
 import React, { useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
@@ -29,6 +28,8 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
     const [token, setToken] = useState<string | null>(null);
 
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
     useEffect(() => {
         const savedToken = localStorage.getItem("token");
         const savedUser = localStorage.getItem("user");
@@ -43,7 +44,7 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
     const handleLoginSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await fetch('http://localhost:8000/api/v1/auth/login', {
+            const res = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -73,7 +74,7 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
     const handleRegisterSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await fetch('http://localhost:8000/api/v1/auth/register', {
+            const res = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -117,7 +118,6 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
         setUser(updatedUser);
         alert("Profile updated successfully!");
     };
-
     return (
         <>
             <header className="w-full bg-white  border-b border-gray-200 dark:border-gray-800 shadow-sm sticky top-0 z-40">

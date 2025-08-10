@@ -81,15 +81,3 @@ export const getPostComments = async (req, res) => {
 
   res.json(rows);
 };
-
-// export const sharePost = async (req, res) => {
-//   const email = getUserIdFromToken(req);
-//   const post_id = req.params.postId;
-
-//   const { rows } = await query('SELECT id FROM users WHERE email = $1', [email]);
-//   const user_id = rows[0].id;
-
-//   await query('INSERT INTO post_shares (post_id, user_id) VALUES ($1, $2)', [post_id, user_id]);
-
-//   res.status(201).json({ message: 'Post shared' });
-// };

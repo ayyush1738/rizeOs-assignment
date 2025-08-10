@@ -16,7 +16,6 @@ import { ethers, BrowserProvider } from "ethers";
 
 const PLATFORM_FEE_CONTRACT = "0x2b4DaD65A49dd4F03eA41C9Ed8557c84Da1136F7";
 const PLATFORM_FEE_AMOUNT = ethers.parseEther("0.001");
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Jobs() {
@@ -36,8 +35,6 @@ export default function Jobs() {
     const [applicants, setApplicants] = useState<Applicant[]>([]);
 
     const { address } = useAccount();
-
-
     const fetchJobs = async () => {
         setIsLoading(true);
         try {
@@ -50,16 +47,13 @@ export default function Jobs() {
             setIsLoading(false);
         }
     };
-
     const fetchAppliedJobs = async () => {
         try {
             const token = localStorage.getItem('token');
             if (!token) return;
-
             const { data } = await axios.get(`${API_BASE_URL}/api/v1/jobs/applied`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-
             setAppliedJobs(Array.isArray(data.applied_job_ids) ? data.applied_job_ids : []);
         } catch (error) {
             console.error('Failed to fetch applied jobs:', error);
@@ -69,12 +63,10 @@ export default function Jobs() {
 
     const fetchCurrentUser = async () => {
         const token = localStorage.getItem('token');
-
         if (!token) {
             console.log("No token found. User is not logged in. Aborting fetchCurrentUser.");
             return;
         }
-
         try {
             const { data } = await axios.get(`${API_BASE_URL}/api/v1/user/profile`, {
                 headers: {
@@ -162,8 +154,6 @@ export default function Jobs() {
             alert('An error occurred while matching jobs.');
         }
     };
-
-
     const filteredJobs = useMemo(() => {
         return jobs.filter(job => {
             const search = searchTerm.toLowerCase();
@@ -185,8 +175,6 @@ export default function Jobs() {
             return matchesSearch && matchesLocation;
         });
     }, [jobs, searchTerm, locationFilter]);
-
-
     const handleApplyClick = (job: Job) => {
         setSelectedJob(job);
         setIsApplyModalOpen(true);
@@ -196,7 +184,6 @@ export default function Jobs() {
         setIsApplyModalOpen(false);
         setSelectedJob(null);
     };
-
     const handleApplicationSubmit = async (coverLetter: string) => {
         if (!selectedJob) return;
         try {
@@ -219,7 +206,6 @@ export default function Jobs() {
             alert(errorMessage);
         }
     };
-
     const handleJobPostSubmit = async (jobData: CreateJobPayload) => {
     try {
         const token = localStorage.getItem('token');
@@ -228,11 +214,9 @@ export default function Jobs() {
             return;
         }
 
-        // 1. Connect to Ethereum provider
         const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner(); // ✅ await here
+        const signer = await provider.getSigner();
 
-        // 2. Pay platform fee
         const tx = await signer.sendTransaction({
             to: PLATFORM_FEE_CONTRACT,
             value: PLATFORM_FEE_AMOUNT
@@ -240,14 +224,12 @@ export default function Jobs() {
         await tx.wait();
         console.log("Platform fee paid:", tx.hash);
 
-        // 3. Post job after fee is paid
         await axios.post(`${API_BASE_URL}/api/v1/jobs/create`, jobData, {
             headers: { 
                 Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json' // optional, for clarity
+                'Content-Type': 'application/json' 
             },
         });
-
         alert('Job posted successfully!');
         setIsPostJobModalOpen(false);
         fetchJobs();
@@ -258,8 +240,6 @@ export default function Jobs() {
     }
 };
 
-
-
     const handleUpdateApplicantStatus = async (applicationId: number, status: 'accepted' | 'rejected') => {
         try {
             const token = localStorage.getItem('token');
@@ -267,7 +247,6 @@ export default function Jobs() {
                 alert('Authentication error.');
                 return;
             }
-
             await axios.put(
                 `${API_BASE_URL}/api/v1/applications/${applicationId}/status`,
                 { status },
@@ -283,15 +262,11 @@ export default function Jobs() {
             alert(errorMessage);
         }
     };
-
-
     const handleViewApplicantsModalClose = () => {
         setIsViewApplicantsModalOpen(false);
         setSelectedJob(null);
         setApplicants([]);
     };
-
-
     const handleRefresh = () => {
         setSearchTerm('');
         setLocationFilter('');
@@ -303,10 +278,8 @@ export default function Jobs() {
             handleViewApplicantsClick(selectedJob);
         }
     };
-
     return (
         <div className="w-full bg-white mx-auto p-4 md:p-8 rounded-2xl">
-            {/* Header */}
             <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
                 <h1 className="text-3xl font-bold text-gray-900 flex items-center">
                     <Briefcase className="mr-3" />
@@ -332,7 +305,6 @@ export default function Jobs() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Sidebar */}
                 <aside className="lg:col-span-1 space-y-6 mt-12">
                     <Card>
                         <CardHeader><CardTitle className="flex items-center text-gray-600"><Filter className="mr-2 h-4 w-4" />Filters</CardTitle></CardHeader>
@@ -344,7 +316,7 @@ export default function Jobs() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center text-gray-600">
-                                AI Job Matcher
+                                AI Job Finder
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -365,7 +337,6 @@ export default function Jobs() {
                     </Card>
                 </aside>
 
-                {/* Job Listings */}
                 <main className="lg:col-span-3 space-y-8">
                     {matchedJobs.length > 0 && (
                         <section>
@@ -411,8 +382,6 @@ export default function Jobs() {
                     </section>
                 </main>
             </div>
-
-            {/* Modals */}
             <PostJobModal
                 isOpen={isPostJobModalOpen}
                 onClose={() => setIsPostJobModalOpen(false)}
@@ -427,7 +396,6 @@ export default function Jobs() {
                     onSubmit={handleApplicationSubmit}
                 />
             )}
-
             {isViewApplicantsModalOpen && selectedJob && (
                 <ViewApplicantsModal
                     isOpen={isViewApplicantsModalOpen}
