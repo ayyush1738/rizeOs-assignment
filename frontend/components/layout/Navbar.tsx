@@ -1,6 +1,6 @@
 // components/NavbarDemo.tsx
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import AuthForm from "@/components/ui/AuthForm";
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
@@ -28,6 +28,17 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
     const [token, setToken] = useState<string | null>(null);
 
+    useEffect(() => {
+        const savedToken = localStorage.getItem("token");
+        const savedUser = localStorage.getItem("user");
+
+        if (savedToken && savedUser) {
+            setToken(savedToken);
+            setUser(JSON.parse(savedUser));
+            setIsAuthenticated(true);
+        }
+    }, []);
+
     const handleLoginSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
@@ -44,7 +55,7 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
                 setIsAuthenticated(true);
                 setShowModal(false);
                 setToken(data.token);
-                setUser(data.user); 
+                setUser(data.user);
 
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
@@ -74,7 +85,7 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
                 setIsAuthenticated(true);
                 setShowModal(false);
                 setToken(data.token);
-                setUser(data.user); 
+                setUser(data.user);
 
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));

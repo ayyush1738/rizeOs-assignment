@@ -188,7 +188,12 @@ export default function TrendingPosts() {
                       className="flex items-center space-x-1 hover:text-red-500 cursor-pointer"
                       onClick={() => handleLike(post.id)}
                     >
-                      <Heart className="w-4 h-4" />
+                      <Heart
+  className={`w-4 h-4 cursor-pointer transition-colors duration-200 ${
+    post.liked_by_user ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
+  }`}
+/>
+
                       <span>{post.likes}</span>
                     </div>
                     <div

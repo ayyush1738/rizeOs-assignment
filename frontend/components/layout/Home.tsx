@@ -56,6 +56,7 @@ export default function Hero({ activeTab, setActiveTab }: HeroProps) {
     // Combine query and roles to make search query string
     // e.g. "Node.js developer Frontend Developer Backend Developer"
     const combinedQuery = [query, ...selectedRoles].join(" ").trim();
+    const encodedQuery = encodeURIComponent(combinedQuery);
 
     if (!combinedQuery) {
       setError("Please enter a search query or select roles.");
@@ -66,8 +67,7 @@ export default function Hero({ activeTab, setActiveTab }: HeroProps) {
     try {
       const options = {
         method: "GET",
-        url: "https://jsearch.p.rapidapi.com/search",
-        params: { query: combinedQuery },
+        url: `https://jsearch.p.rapidapi.com/search?query=${encodedQuery}`,
         headers: {
           "X-Rapidapi-Key": "2ea668dfc1msh7821db762f3d659p15f4f6jsn1129cbd162d9", // Replace with your API key
           "X-Rapidapi-Host": "jsearch.p.rapidapi.com",
@@ -119,7 +119,7 @@ export default function Hero({ activeTab, setActiveTab }: HeroProps) {
           ))}
           <Button
             size="sm"
-            className="rounded-full px-4 bg-purple-600 text-white hover:bg-purple-700"
+            className="rounded-full px-4 bg-purple-600 text-white hover:bg-purple-700 cursor-pointer"
             onClick={handleSearch}
             disabled={loading}
           >
