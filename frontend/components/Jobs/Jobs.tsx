@@ -114,7 +114,7 @@ export default function Jobs() {
         console.log("Axios GET headers:", headers);
 
         const { data } = await axios.get<{ applicants: Applicant[] }>(
-            `${API_BASE_URL}/api/v1/jobs/${job.id}/applicants`,
+            `${API_BASE_URL}/api/v1/user/${job.id}/applicants`,
             { headers }
         );
 

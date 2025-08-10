@@ -32,16 +32,6 @@ export const initDb = async () => {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
-        CREATE TABLE IF NOT EXISTS connections (
-            id SERIAL PRIMARY KEY,
-            requester_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-            target_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-            status TEXT DEFAULT 'pending', -- 'pending', 'accepted', 'rejected'
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-            UNIQUE (requester_id, target_id) -- Prevent duplicate requests
-        );
 
         CREATE TABLE IF NOT EXISTS posts (
             id SERIAL PRIMARY KEY,

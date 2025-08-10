@@ -5,7 +5,6 @@ import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { X, MapPin, Briefcase, Link as LinkIcon, Wallet, Loader2 } from 'lucide-react';
 
-// Define the shape of the public user profile data
 interface UserProfile {
   username: string;
   full_name: string;
@@ -76,7 +75,7 @@ export default function UserProfilePopup({ username, isOpen, onClose, token }: U
               <div className="flex items-center space-x-4 bg-purple">
                 <Avatar className="w-16 h-16 text-2xl border-2 bg-gray-600 border-white shadow-md">
                   <AvatarImage src={profile.profile_picture} alt={profile.full_name} />
-                  <AvatarFallback>{profile.full_name?.charAt(0).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback>{profile.username?.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div>
                   <h3 className="text-xl font-bold text-gray-900">{profile.full_name}</h3>
