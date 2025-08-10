@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 import { query } from '../config/dbConnect.js';
-
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export const register = async (req, res) => {
@@ -16,10 +15,6 @@ export const register = async (req, res) => {
       'SELECT * FROM users WHERE email = $1 OR username = $2',
       [email, username]
     );
-
-    if (rows.length > 0) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
 
     const insertResult = await query(
       'INSERT INTO users (email, username, password) VALUES ($1, $2, $3) RETURNING *',
@@ -80,14 +75,12 @@ export const login = async (req, res) => {
       path: '/',
       maxAge: 6 * 60 * 60 * 1000,
     });
-
-    // Remove sensitive info
     const { password: _, ...safeUser } = user;
 
     res.json({
       message: 'Login successful',
       token,
-      user: safeUser, // return complete user info except password
+      user: safeUser, 
     });
   } catch (err) {
     console.error('Login error:', err);
