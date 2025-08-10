@@ -7,15 +7,25 @@ import jobRoutes from './app/routes/jobs.routes.js';
 import feedRoutes from './app/routes/feed.routes.js';
 
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));  
 app.use(cookieParser());
 app.use(cors({
-    origin: '*',  
+    origin: ['http://localhost:3000', 'https://rize-os-assignment-740aqlfxo-ayyush1738s-projects.vercel.app'],
     credentials: true,
 }));
+
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'ok',
+        message: 'Server is healthy',
+        uptime: process.uptime(),
+        timestamp: new Date(),
+    });
+});
+
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/user', userRoutes);
