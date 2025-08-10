@@ -1,5 +1,3 @@
-// components/Jobs/ApplyModal.tsx
-
 'use client';
 
 import { useState, FormEvent } from 'react';

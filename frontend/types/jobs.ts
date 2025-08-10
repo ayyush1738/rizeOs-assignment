@@ -53,11 +53,12 @@ export interface PostJobModalProps {
   onClose: () => void;
   onSubmit: (jobData: CreateJobPayload) => Promise<void>;
 }
- export interface ViewApplicantsModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    applicants: Applicant[];
-    onUpdateStatus: (applicationId: number, status: 'accepted' | 'rejected') => void;
-    jobTitle: string;
-    isLoading: boolean;
+
+export interface ViewApplicantsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  applicants: Applicant[];
+  onUpdateStatus: (applicationId: number, status: 'accepted' | 'rejected') => void;
+  jobTitle: string;
+  isLoading: boolean;
 }

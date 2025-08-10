@@ -3,19 +3,11 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Applicant, ViewApplicantsModalProps } from '@/types/jobs';
-import { Check, X, XCircle } from 'lucide-react'; // Import XCircle for the close button
+import { Check, X, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import UserProfilePopup from '@/components/ui/ViewUsrProfile'; // <-- IMPORT THE POPUP
+import UserProfilePopup from '@/components/ui/ViewUsrProfile';
+import type { ViewApplicantsModalProps } from '@/types/jobs'; // ✅ import the type
 
-interface ViewApplicantsModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    applicants: Applicant[];
-    onUpdateStatus: (applicationId: number, status: 'accepted' | 'rejected') => void;
-    jobTitle: string;
-    isLoading: boolean;
-}
 
 export default function ViewApplicantsModal({
     isOpen,
@@ -23,14 +15,12 @@ export default function ViewApplicantsModal({
     applicants,
     onUpdateStatus,
     jobTitle,
-    isLoading
-}: ViewApplicantsModalProps) {
-      const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+    isLoading }: ViewApplicantsModalProps) {
+    const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
 
-        const getAuthToken = () => localStorage.getItem('token');
+    const getAuthToken = () => localStorage.getItem('token');
 
-    // Effect to handle the 'Escape' key press to close the modal
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
@@ -41,31 +31,24 @@ export default function ViewApplicantsModal({
         return () => document.removeEventListener('keydown', handleEscape);
     }, [onClose]);
 
-    // Return null if the modal is not open to prevent rendering
     if (!isOpen) return null;
 
     const handleViewProfile = (username: string) => {
         setSelectedUsername(username);
-      };
-      const handleCloseProfile = () => {
+    };
+    const handleCloseProfile = () => {
         setSelectedUsername(null);
-      };
-    
-      
-    
+    };
 
     return (
-        // Modal Overlay: Covers the entire screen
         <div
             className="fixed inset-0 bg-black/60 bg-opacity-50 z-40 flex justify-center items-center"
-            onClick={onClose} // Close modal if overlay is clicked
+            onClick={onClose}
         >
-            {/* Modal Panel: Stops click propagation to prevent closing when clicking inside the panel */}
             <div
                 className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto z-50 p-6"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Modal Header */}
                 <div className="flex justify-between items-center mb-4 border-b pb-4">
                     <h2 className="text-2xl font-bold text-gray-800">Applicants for "{jobTitle}"</h2>
                     <button
@@ -76,8 +59,6 @@ export default function ViewApplicantsModal({
                         <XCircle className="w-6 h-6" />
                     </button>
                 </div>
-
-                {/* Modal Body */}
                 <div className="space-y-4">
                     {isLoading ? (
                         <p className="text-center text-gray-600 py-8">Loading applicants...</p>
@@ -107,10 +88,9 @@ export default function ViewApplicantsModal({
                                 </CardHeader>
                                 <CardContent>
                                     <p className="text-gray-700 mt-2">{applicant.cover_letter}</p>
-                                    <p className={`mt-3 text-sm font-bold ${
-                                        applicant.status === 'accepted' ? 'text-green-600' :
-                                        applicant.status === 'rejected' ? 'text-red-500' : 'text-gray-600'
-                                    }`}>
+                                    <p className={`mt-3 text-sm font-bold ${applicant.status === 'accepted' ? 'text-green-600' :
+                                            applicant.status === 'rejected' ? 'text-red-500' : 'text-gray-600'
+                                        }`}>
                                         Status: <span className="capitalize">{applicant.status}</span>
                                     </p>
                                 </CardContent>
@@ -123,13 +103,13 @@ export default function ViewApplicantsModal({
             </div>
 
             {selectedUsername && (
-                    <UserProfilePopup
-                      isOpen={!!selectedUsername}
-                      onClose={handleCloseProfile}
-                      username={selectedUsername}
-                      token={getAuthToken()}
-                    />
-                  )}
+                <UserProfilePopup
+                    isOpen={!!selectedUsername}
+                    onClose={handleCloseProfile}
+                    username={selectedUsername}
+                    token={getAuthToken()}
+                />
+            )}
         </div>
     );
 }
