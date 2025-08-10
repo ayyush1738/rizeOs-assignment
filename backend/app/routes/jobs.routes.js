@@ -15,7 +15,6 @@ router.get('/list', listJob);
 router.get('/:id/applicants', getApplicants);
 router.get('/:id', getJobById)
 router.post('/match', upload.single('resume'), matchJobsFromResume);
-// router.post('/search', searchJobsByKeywords);
 router.post('/:id/apply', applyToJob);
 
 

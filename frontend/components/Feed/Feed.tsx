@@ -55,9 +55,10 @@ export default function TrendingPosts() {
   const handleLike = async (postId: string) => {
     const token = getAuthToken();
     if (!token) {
-      console.error("Auth Error: Not logged in");
+      alert("Please, Login or Signup first");
       return;
     }
+
 
     const originalPosts = [...posts];
 
@@ -90,9 +91,10 @@ export default function TrendingPosts() {
   const handleCommentSubmit = async (postId: string) => {
     const token = getAuthToken();
     if (!token) {
-      console.error("Auth Error: Not logged in");
+      alert("Please, Login or Signup first");
       return;
     }
+
     if (!commentText.trim()) return;
 
     try {
@@ -157,7 +159,7 @@ export default function TrendingPosts() {
               <div key={post.id} className="space-y-3 border-b pb-4">
                 {/* Post header and content... (same as before) */}
                 <div className="flex items-start space-x-3">
-                  <Avatar className="w-10 h-10">
+                  <Avatar className="w-10 h-10 bg-purple-600">
                     <AvatarImage src={post.profile_picture} alt={post.full_name} />
                     <AvatarFallback>{post.full_name.charAt(0)}</AvatarFallback>
                   </Avatar>
@@ -170,7 +172,7 @@ export default function TrendingPosts() {
                     <p className="text-xs text-gray-800 text-left">@{post.username}</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-900 text-left ml-40 bg-gray-200 p-20">{post.content}</p>
+                <p className="text-sm text-gray-900 text-left bg-gray-200 p-10 rounded-2xl">{post.content}</p>
                 <div className="flex flex-wrap gap-1">
                   {autoTags(post.content).map((tag) => (
                     <Badge key={tag} variant="secondary" className="text-xs">
