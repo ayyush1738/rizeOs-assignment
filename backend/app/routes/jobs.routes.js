@@ -10,7 +10,7 @@ const upload = multer({ storage: storage });
 const router = Router();
 
 router.post('/create', createJob);
-router.get('/applied', authMiddleware, getAppliedJobs);
+router.get('/applied', getAppliedJobs);
 router.get('/list', listJob);
 router.get('/:id/applicants', authMiddleware, getApplicants);
 router.get('/:id', getJobById)
