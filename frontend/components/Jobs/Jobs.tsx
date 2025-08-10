@@ -9,10 +9,13 @@ import { Search, Filter, Briefcase, PlusCircle, RefreshCw } from 'lucide-react';
 import JobCard from './JobCard';
 import ApplyModal from './ApplyModal';
 import PostJobModal from './PostJobModals';
-// ✅ FIXED: Added Applicant to the import list
 import type { Job, MatchedJob, CreateJobPayload, Applicant } from '@/types/jobs';
 import ViewApplicantsModal from './ViewApplicantsModal';
+import { useAccount } from 'wagmi';
+import { ethers, BrowserProvider } from "ethers";
 
+const PLATFORM_FEE_CONTRACT = "0x2b4DaD65A49dd4F03eA41C9Ed8557c84Da1136F7";
+const PLATFORM_FEE_AMOUNT = ethers.parseEther("0.001");
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -31,6 +34,8 @@ export default function Jobs() {
     const [isApplicantsLoading, setIsApplicantsLoading] = useState(false);
     const [isViewApplicantsModalOpen, setIsViewApplicantsModalOpen] = useState(false);
     const [applicants, setApplicants] = useState<Applicant[]>([]);
+
+    const { address } = useAccount();
 
 
     const fetchJobs = async () => {
@@ -216,27 +221,44 @@ export default function Jobs() {
     };
 
     const handleJobPostSubmit = async (jobData: CreateJobPayload) => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert('You must be logged in to post a job.');
-                return;
-            }
-
-            await axios.post(`${API_BASE_URL}/api/v1/jobs/create`, jobData, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            alert('Job posted successfully!');
-            setIsPostJobModalOpen(false);
-            fetchJobs();
-        } catch (error: any) {
-            const errorMessage = error.response?.data?.message || 'Failed to post job.';
-            alert(errorMessage);
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('You must be logged in to post a job.');
+            return;
         }
-    };
 
-    
+        // 1. Connect to Ethereum provider
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner(); // ✅ await here
+
+        // 2. Pay platform fee
+        const tx = await signer.sendTransaction({
+            to: PLATFORM_FEE_CONTRACT,
+            value: PLATFORM_FEE_AMOUNT
+        });
+        await tx.wait();
+        console.log("Platform fee paid:", tx.hash);
+
+        // 3. Post job after fee is paid
+        await axios.post(`${API_BASE_URL}/api/v1/jobs/create`, jobData, {
+            headers: { 
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json' // optional, for clarity
+            },
+        });
+
+        alert('Job posted successfully!');
+        setIsPostJobModalOpen(false);
+        fetchJobs();
+
+    } catch (error: any) {
+        const errorMessage = error.response?.data?.message || error.message || 'Failed to post job.';
+        alert(errorMessage);
+    }
+};
+
+
 
     const handleUpdateApplicantStatus = async (applicationId: number, status: 'accepted' | 'rejected') => {
         try {
@@ -301,7 +323,7 @@ export default function Jobs() {
                     </Button>
                     <Button
                         className="flex flex-row cursor-pointer"
-                        onClick={() => setIsPostJobModalOpen(true)}
+                        onClick={() => { if (!address) { alert('Please Connect Your Wallet First!'); setIsPostJobModalOpen(false); } else { setIsPostJobModalOpen(true) } }}
                     >
                         <PlusCircle className="mr-2 h-5 w-5" />
                         Post a Job
@@ -309,7 +331,6 @@ export default function Jobs() {
                 </div>
             </div>
 
-            {/* Main Content */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Sidebar */}
                 <aside className="lg:col-span-1 space-y-6 mt-12">

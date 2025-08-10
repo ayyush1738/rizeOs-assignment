@@ -230,7 +230,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
                 <div className={`${cardContentStyles} space-y-4`}>
                   <div className="flex flex-wrap gap-2 border p-2 rounded-md min-h-[40px]">
                     {skills.map((skill) => (
-                      <span key={skill} className="flex items-center gap-1 px-2 py-1 bg-blue-500 text-white text-sm rounded-md">
+                      <span key={skill} className="flex items-center gap-1 px-2 py-1 bg-blue-900 text-white text-sm rounded-md">
                         {skill}
                         <button onClick={() => handleRemoveSkill(skill)} className="ml-1 hover:text-red-300 rounded-full"><X size={14} /></button>
                       </span>
@@ -267,7 +267,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
             <button onClick={onClose} disabled={isLoading} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md mr-2 transition-colors disabled:opacity-50">
               Cancel
             </button>
-            <button onClick={handleSaveChanges} disabled={isLoading} className={`${buttonStyles} px-6 py-2 min-w-[120px]`}>
+            <button onClick={handleSaveChanges} disabled={isLoading} className={`${buttonStyles} px-6 bg-blue-900 py-2 min-w-[120px]`}>
               {isLoading ? <Loader2 className="w-5 h-5 mx-auto animate-spin" /> : 'Save Changes'}
             </button>
           </div>

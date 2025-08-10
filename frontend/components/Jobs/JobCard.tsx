@@ -34,7 +34,7 @@ export default function JobCard({ job, onApply, onViewApplicants, isApplied, cur
           <DollarSign className="w-4 h-4 mr-2 flex-shrink-0" />
           <span>{job.budget}</span>
         </div>
-        <div className="flex flex-wrap gap-2 pt-2">
+        <div className="flex flex-wrap gap-2 pt-2 text-gray-600">
             {job.skills?.map((skill) => (
               <Badge key={skill} variant="secondary">{skill}</Badge>
             ))}

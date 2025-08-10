@@ -222,11 +222,11 @@ export default function TrendingPosts() {
                         value={commentText}
                         onChange={(e) => setCommentText(e.target.value)}
                         placeholder="Add a comment..."
-                        className="flex-1 p-2 border rounded-md text-sm"
+                        className="flex-1 text-black p-2 border rounded-md text-sm"
                       />
                       <button
                         onClick={() => handleCommentSubmit(post.id)}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
+                        className="bg-blue-900 cursor-pointer text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
                       >
                         Post
                       </button>

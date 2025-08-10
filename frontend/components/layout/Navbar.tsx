@@ -120,8 +120,8 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
 
     return (
         <>
-            <header className="w-full bg-white border-b border-gray-200 dark:border-gray-800 shadow-sm sticky top-0 z-40">
-                <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <header className="w-full bg-white  border-b border-gray-200 dark:border-gray-800 shadow-sm sticky top-0 z-40">
+                <nav className="max-w-7xl mx-auto px-4 sm:px-2 lg:px-2">
                     <div className="flex items-center h-16">
                         <div className="flex-1">
                             <div className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
@@ -129,7 +129,7 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
                             </div>
                         </div>
 
-                        <div className="flex-1 flex justify-center">
+                        <div className="flex-1 flex">
                             <div className="hidden md:flex items-center space-x-2">
                                 {navItems.map((item) => {
                                     const isActive = activeTab === item.link;
@@ -155,11 +155,12 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
                             </div>
                         </div>
                         <ConnectButton />
-                        <div className="flex-1 flex justify-end">
-                            <div className="flex items-center z-50">
+
+                        <div className="flex-1 py-auto px-4">
+                            <div className="flex items-center z-50 ">
                                 {!isAuthenticated ? (
                                     <button
-                                        className="h-10 px-6 bg-blue-900 hover:bg-blue-800 text-white cursor-pointer rounded-md font-semibold text-sm transition-colors"
+                                        className="h-10 px-4 bg-blue-900 hover:bg-blue-800 text-white cursor-pointer rounded-md font-semibold text-sm transition-colors"
                                         onClick={() => setShowModal(true)}
                                     >
                                         Sign In
