@@ -176,8 +176,7 @@ export const getApplicants = async (req, res) => {
                 ja.cover_letter,
                 ja.status,
                 ja.applied_at,
-                u.full_name AS user_full_name,
-                u.profile_picture AS user_profile_picture
+                u.username
             FROM
                 job_applications AS ja
             JOIN

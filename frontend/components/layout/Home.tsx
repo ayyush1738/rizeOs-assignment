@@ -149,7 +149,6 @@ export default function Hero({ activeTab, setActiveTab }: HeroProps) {
         <div>
           {activeTab === "feed" && <TrendingPosts />}
           {activeTab === "jobs" && <Jobs />}
-          {activeTab === "network" && <Networks />}
         </div>
 
         {/* Popup for job results */}

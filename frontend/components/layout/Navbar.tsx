@@ -6,6 +6,7 @@ import AuthForm from "@/components/ui/AuthForm";
 import ProfileAvatar from "@/components/ui/ProfileAvatar";
 import type { UserProfile } from "@/types/UserProfile";
 import ProfileSettingsModal from "@/components/ui/ProfileSettingsModal";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 interface NavbarDemoProps {
     activeTab: string;
@@ -153,7 +154,7 @@ export default function NavbarDemo({ activeTab, onTabChange }: NavbarDemoProps) 
                                 })}
                             </div>
                         </div>
-
+                        <ConnectButton />
                         <div className="flex-1 flex justify-end">
                             <div className="flex items-center z-50">
                                 {!isAuthenticated ? (

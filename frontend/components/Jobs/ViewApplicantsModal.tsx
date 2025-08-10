@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { Applicant } from '@/types/jobs';
 import { Check, X, XCircle } from 'lucide-react'; // Import XCircle for the close button
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import UserProfilePopup from '@/components/ui/ViewUsrProfile'; // <-- IMPORT THE POPUP
 
 interface ViewApplicantsModalProps {
     isOpen: boolean;
@@ -24,6 +25,10 @@ export default function ViewApplicantsModal({
     jobTitle,
     isLoading
 }: ViewApplicantsModalProps) {
+      const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+        const getAuthToken = () => localStorage.getItem('token');
 
     // Effect to handle the 'Escape' key press to close the modal
     useEffect(() => {
@@ -38,6 +43,16 @@ export default function ViewApplicantsModal({
 
     // Return null if the modal is not open to prevent rendering
     if (!isOpen) return null;
+
+    const handleViewProfile = (username: string) => {
+        setSelectedUsername(username);
+      };
+      const handleCloseProfile = () => {
+        setSelectedUsername(null);
+      };
+    
+      
+    
 
     return (
         // Modal Overlay: Covers the entire screen
@@ -70,23 +85,22 @@ export default function ViewApplicantsModal({
                         applicants.map(applicant => (
                             <Card key={applicant.id} className="transition-shadow hover:shadow-md">
                                 <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                    <div className="flex items-center gap-4">
-                                        <Avatar>
-                                            <AvatarImage src={applicant.user_profile_picture} alt={applicant.user_full_name} />
-                                            <AvatarFallback>{applicant.user_full_name.charAt(0).toUpperCase()}</AvatarFallback>
+                                    <div onClick={() => handleViewProfile(applicant.username)} className="flex items-center gap-4 cursor-pointer text-black">
+                                        <Avatar className='bg-gray-600'>
+                                            <AvatarFallback>{applicant.username.charAt(0).toUpperCase()}</AvatarFallback>
                                         </Avatar>
                                         <div>
-                                            <CardTitle className="text-lg font-semibold">{applicant.user_full_name}</CardTitle>
+                                            <CardTitle className="text-lg font-semibold">{applicant.username}</CardTitle>
                                             <p className="text-sm text-gray-500">
                                                 Applied on: {new Date(applicant.applied_at).toLocaleDateString()}
                                             </p>
                                         </div>
                                     </div>
                                     <div className="flex gap-2 self-start sm:self-center">
-                                        <Button size="sm" variant="outline" className='text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700' onClick={() => onUpdateStatus(applicant.id, 'accepted')}>
+                                        <Button size="sm" variant="outline" className='text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700 cursor-pointer' onClick={() => onUpdateStatus(applicant.id, 'accepted')}>
                                             <Check className="h-4 w-4 mr-2" /> Accept
                                         </Button>
-                                        <Button size="sm" variant="outline" className='text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700' onClick={() => onUpdateStatus(applicant.id, 'rejected')}>
+                                        <Button size="sm" variant="outline" className='text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700 cursor-pointer' onClick={() => onUpdateStatus(applicant.id, 'rejected')}>
                                             <X className="h-4 w-4 mr-2" /> Reject
                                         </Button>
                                     </div>
@@ -107,6 +121,15 @@ export default function ViewApplicantsModal({
                     )}
                 </div>
             </div>
+
+            {selectedUsername && (
+                    <UserProfilePopup
+                      isOpen={!!selectedUsername}
+                      onClose={handleCloseProfile}
+                      username={selectedUsername}
+                      token={getAuthToken()}
+                    />
+                  )}
         </div>
     );
 }

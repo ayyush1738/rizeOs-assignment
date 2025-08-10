@@ -36,6 +36,5 @@ export interface Applicant {
     cover_letter: string;
     status: string;
     applied_at: string;
-    user_full_name: string;
-    user_profile_picture?: string;
+    username: string;
 }

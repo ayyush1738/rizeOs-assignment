@@ -92,42 +92,39 @@ export default function Jobs() {
     }, []);
 
     const handleViewApplicantsClick = async (job: Job) => {
-    setSelectedJob(job);
-    setIsViewApplicantsModalOpen(true);
-    setIsApplicantsLoading(true);
-    setApplicants([]);
+        setSelectedJob(job);
+        setIsViewApplicantsModalOpen(true);
+        setIsApplicantsLoading(true);
+        setApplicants([]);
 
-    try {
-        // ✅ Make sure we're in browser and token is loaded after hydration
-        
+        try {
+            const token = localStorage.getItem('token');
+            console.log("Token from localStorage:", token);
 
-        const token = localStorage.getItem('token');
-        console.log("Token from localStorage:", token);
+            if (!token) {
+                alert('Authentication error: no token found.');
+                setIsApplicantsLoading(false);
+                return;
+            }
 
-        if (!token) {
-            alert('Authentication error: no token found.');
+            const headers = { Authorization: `Bearer ${token}` };
+            console.log("Axios GET headers:", headers);
+
+            const { data } = await axios.get<{ applicants: Applicant[] }>(
+                `${API_BASE_URL}/api/v1/jobs/${job.id}/applicants`,
+                { headers }
+            );
+
+            console.log("Applicants API response:", data);
+
+            setApplicants(Array.isArray(data.applicants) ? data.applicants : []);
+
+        } catch (error: any) {
+            console.error('Failed to fetch applicants:', error?.response || error);
+        } finally {
             setIsApplicantsLoading(false);
-            return;
         }
-
-        const headers = { Authorization: `Bearer ${token}` };
-        console.log("Axios GET headers:", headers);
-
-        const { data } = await axios.get<{ applicants: Applicant[] }>(
-            `${API_BASE_URL}/api/v1/user/${job.id}/applicants`,
-            { headers }
-        );
-
-        console.log("Applicants API response:", data);
-
-        setApplicants(Array.isArray(data.applicants) ? data.applicants : []);
-
-    } catch (error: any) {
-        console.error('Failed to fetch applicants:', error?.response || error);
-    } finally {
-        setIsApplicantsLoading(false);
-    }
-};
+    };
 
 
     const handleMatchJobs = async () => {
@@ -239,14 +236,7 @@ export default function Jobs() {
         }
     };
 
-    const handleRefresh = () => {
-        setSearchTerm('');
-        setLocationFilter('');
-        setResumeFile(null);
-        setMatchedJobs([]);
-        fetchJobs();
-        fetchAppliedJobs();
-    };
+    
 
     const handleUpdateApplicantStatus = async (applicationId: number, status: 'accepted' | 'rejected') => {
         try {
@@ -280,6 +270,17 @@ export default function Jobs() {
     };
 
 
+    const handleRefresh = () => {
+        setSearchTerm('');
+        setLocationFilter('');
+        setResumeFile(null);
+        setMatchedJobs([]);
+        fetchJobs();
+        fetchAppliedJobs();
+        if (selectedJob) {
+            handleViewApplicantsClick(selectedJob);
+        }
+    };
 
     return (
         <div className="w-full bg-white mx-auto p-4 md:p-8 rounded-2xl">

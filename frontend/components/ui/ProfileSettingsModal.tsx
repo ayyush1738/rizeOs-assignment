@@ -5,7 +5,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 // ADDED: Link icon for the resume field for better UI context
 import { Upload, X, User, Briefcase, MapPin, Loader2, Link as LinkIcon } from 'lucide-react';
 import type { UserProfile } from '@/types/UserProfile';
-import { ConnectButton } from '@/components/ConnectButton';
 import { useAccount } from 'wagmi';
 
 interface ProfileSettingsModalProps {
@@ -251,7 +250,6 @@ export default function ProfileSettingsModal({ isOpen, onClose, user, onSave, to
                 <div className={`${cardContentStyles} space-y-4`}>
                   <div className="flex gap-2">
                     <input value={address} readOnly placeholder="0x..." className={inputStyles}/>
-                    <ConnectButton />
                   </div>
                 </div>
               </div>
